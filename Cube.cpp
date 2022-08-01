@@ -84,7 +84,7 @@ void Cube::r()
 
 }
 
-void Cube::updateCornerOrientation(uint8_t corner_index, uint change)
+void Cube::updateCornerOrientation(uint8_t corner_index, uint8_t change)
 {
     Cubie& corner = this->corners[corner_index];
     corner.orientation = (corner.orientation + change) % 3;

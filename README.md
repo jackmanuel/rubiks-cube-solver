@@ -2,7 +2,7 @@
 417 Group Project
 
 
-Project is configured to compiled on Linux using g++
+Project is configured to compile on Linux using g++.
 
 To run:
 
