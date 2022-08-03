@@ -1,6 +1,8 @@
 #include <iostream>
+#include <queue>
 
 #include "Cube.h"
+#include "Solver2.h"
 
 int main(int argc, char const *argv[])
 {
@@ -8,15 +10,11 @@ int main(int argc, char const *argv[])
 
     Cube cube;
 
-    cube.r();
+    cube.applyMoves(argv[1]);
 
-    cube.printCubeState();
+    Solver2 solver(cube);
 
-    cube.r();
-    cube.r();
-    cube.r();
-
-    cube.printCubeState();
+    solver.solve();
 
     return 0;
 }

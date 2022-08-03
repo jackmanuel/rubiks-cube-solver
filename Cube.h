@@ -16,57 +16,99 @@
 #pragma once
 
 #include <cstdint>
+#include <array>
+#include <vector>
 
 class Cube
 {
-public:
-    
-    struct Cubie
-    {
-        uint8_t index;
-        uint8_t orientation;
-    };
+    public:
 
-    Cube();
-    void printCubeState();
+        bool operator==(const Cube &cube) const
+        {
+            return (this->edges == cube.edges) && (this->corners == cube.corners);
+        }
 
-    void r();
-    void rPrime();
-    void r2();
+        enum move
+        {
+            NONE,
+            R,
+            R_PRIME,
+            R2,
+            U,
+            U_PRIME,
+            U2,
+            F,
+            F_PRIME,
+            F2,
+            D,
+            D_PRIME,
+            D2,
+            B,
+            B_PRIME,
+            B2,
+            L,
+            L_PRIME,
+            L2
+        };
+        
+        struct Cubie
+        {
+            uint8_t index;
+            uint8_t orientation;
 
-    void u();
-    void uPrime();
-    void u2();
+            bool operator==(const Cubie &cubie) const
+            {
+                return (this->index == cubie.index) && (this->orientation == cubie.orientation);
+            }
 
-    void f();
-    void fPrime();
-    void f2();
+        };
 
-    void d();
-    void dPrime();
-    void d2();
+        Cube();
+        bool isSolved(void);
+        bool isEdgeSolved(void);
+        bool isCornerSolved(void);
+        void printCubeState(void);
+        void applyMoves(std::string moveList);
+        std::vector<Cube> generateNeighbours(void);
 
-    void l();
-    void lPrime();
-    void l2();
+        void r();
+        void rPrime();
+        void r2();
 
-    void b();
-    void bPrime();
-    void b2();
+        void u();
+        void uPrime();
+        void u2();
+
+        void f();
+        void fPrime();
+        void f2();
+
+        void d();
+        void dPrime();
+        void d2();
+
+        void l();
+        void lPrime();
+        void l2();
+
+        void b();
+        void bPrime();
+        void b2();
 
 
-private:
+    private:
 
-    Cubie edges[12];
-    Cubie corners[8];
+        std::array<Cubie, 12> edges;
+        std::array<Cubie, 8> corners;
 
-    void updateCornerOrientation(uint8_t corner_index, uint8_t change);
-    void flipEdgeOrientation(uint8_t edge_index);
+        move lastMove;
 
-    void swapCornerCubies(uint8_t first_index, uint8_t second_index);
-    void swapEdgeCubies(uint8_t first_index, uint8_t second_index);
+        void updateCornerOrientation(uint8_t corner_index, uint8_t change);
+        void flipEdgeOrientation(uint8_t edge_index);
 
-    void fourCycleCorners(uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4);
-    void fourCycleEdges(uint8_t e1, uint8_t e2, uint8_t e3, uint8_t e4);
+        void swapCornerCubies(uint8_t first_index, uint8_t second_index);
+        void swapEdgeCubies(uint8_t first_index, uint8_t second_index);
 
+        void fourCycleCorners(uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4);
+        void fourCycleEdges(uint8_t e1, uint8_t e2, uint8_t e3, uint8_t e4);
 };

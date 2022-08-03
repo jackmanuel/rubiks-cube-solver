@@ -1,5 +1,10 @@
 #include <iostream>
 #include <cstdio>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
+#include <vector>
 
 #include "Cube.h"
 
@@ -18,9 +23,10 @@ Cube::Cube()
         this->edges[i].orientation = 0;
     }
 
+    this->lastMove = NONE;
 }
 
-void Cube::printCubeState()
+void Cube::printCubeState(void)
 {   
     std::cout << "Corners: " << std::endl;
     for (int i = 0; i < 8; i++){
@@ -41,9 +47,67 @@ void Cube::printCubeState()
     printf("\n");
 }
 
+std::vector<Cube> Cube::generateNeighbours(void)
+{
+    std::vector<Cube> result;
+
+    if (this->lastMove != R && this->lastMove != R_PRIME && this->lastMove != R2)
+    {   
+        Cube rCube = *this;
+        Cube rPrimeCube = *this;
+        Cube r2Cube = *this;
+
+        rCube.r();
+        result.push_back(rCube);
+
+        rPrimeCube.rPrime();
+        result.push_back(rPrimeCube);
+
+        r2Cube.r2();
+        result.push_back(r2Cube);
+    }
+
+    
+    if (this->lastMove != U && this->lastMove != U_PRIME && this->lastMove != U2)
+    {   
+        Cube uCube = *this;
+        Cube uPrimeCube = *this;
+        Cube u2Cube = *this;
+
+        uCube.u();
+        result.push_back(uCube);
+
+        uPrimeCube.uPrime();
+        result.push_back(uPrimeCube);
+
+        u2Cube.u2();
+        result.push_back(u2Cube);
+    }
+
+    if (this->lastMove != F && this->lastMove != F_PRIME && this->lastMove != F2)
+    {
+        Cube fCube = *this;
+        Cube fPrimeCube = *this;
+        Cube f2Cube = *this;
+
+        fCube.f();
+        result.push_back(fCube);
+
+        fPrimeCube.fPrime();
+        result.push_back(fPrimeCube);
+
+        f2Cube.f2();
+        result.push_back(f2Cube);
+    }
+    
+    return result;
+}
+
 
 void Cube::r()
 {
+    this->lastMove = R;
+
     fourCycleCorners(2, 7, 6, 1);
 
     updateCornerOrientation(2, 2);
@@ -57,6 +121,9 @@ void Cube::r()
 
 void Cube::rPrime()
 {
+
+    this->lastMove = R_PRIME;
+
     fourCycleCorners(2, 1, 6, 7);
 
     updateCornerOrientation(1, 1);
@@ -71,6 +138,8 @@ void Cube::rPrime()
 
 void Cube::r2()
 {
+    this->lastMove = R2;
+
     swapCornerCubies(2, 6);
     swapCornerCubies(1, 7);
 
@@ -82,18 +151,24 @@ void Cube::r2()
 
 void Cube::u()
 {
+    this->lastMove = U;
+
     fourCycleCorners(2, 1, 0, 3);
     fourCycleEdges(1, 0, 3, 2);
 }
 
 void Cube::uPrime()
 {
+    this->lastMove = U_PRIME;
+
     fourCycleCorners(2, 3, 0, 1);
     fourCycleEdges(1, 2, 3, 0);
 }
 
 void Cube::u2()
 {
+    this->lastMove = U2;
+
     swapCornerCubies(0, 2);
     swapCornerCubies(3, 1);
 
@@ -103,6 +178,8 @@ void Cube::u2()
 
 void Cube::f()
 {
+    this->lastMove = F; 
+
     fourCycleCorners(2, 3, 4, 7);
 
     updateCornerOrientation(2, 1);
@@ -121,6 +198,8 @@ void Cube::f()
 
 void Cube::fPrime()
 {
+    this->lastMove = F_PRIME;
+
     fourCycleCorners(2, 7, 4, 3);
 
     updateCornerOrientation(2, 1);
@@ -140,6 +219,8 @@ void Cube::fPrime()
 
 void Cube::f2()
 {
+    this->lastMove = F2;
+
     swapCornerCubies(2, 4);
     swapCornerCubies(3, 7);
 
@@ -149,18 +230,24 @@ void Cube::f2()
 
 void Cube::d()
 {
+    this->lastMove = D;
+
     fourCycleCorners(7, 4, 5, 6);
     fourCycleEdges(8, 9, 10, 11);
 }
 
 void Cube::dPrime()
 {
+    this->lastMove = D_PRIME;
+
     fourCycleCorners(4, 7, 6, 5);
     fourCycleEdges(9, 8, 11, 10);
 }
 
 void Cube::d2()
 {
+    this->lastMove = D2;
+
     swapCornerCubies(4, 6);
     swapCornerCubies(7, 5);
 
@@ -170,6 +257,8 @@ void Cube::d2()
 
 void Cube::l()
 {
+    this->lastMove = L;
+
     fourCycleCorners(3, 0, 5, 4);
 
     updateCornerOrientation(3, 1);
@@ -183,6 +272,8 @@ void Cube::l()
 
 void Cube::lPrime()
 {
+    this->lastMove = L_PRIME;
+
     fourCycleCorners(0, 3, 4, 5);
 
     updateCornerOrientation(3, 1);
@@ -196,6 +287,8 @@ void Cube::lPrime()
 
 void Cube::l2()
 {
+    this->lastMove = L2;
+
     swapCornerCubies(3, 5);
     swapCornerCubies(0, 4);
 
@@ -204,7 +297,9 @@ void Cube::l2()
 }
 
 void Cube::b()
-{   
+{
+    this->lastMove = B;
+
     fourCycleCorners(0, 1, 6, 5);
 
     updateCornerOrientation(0, 1);
@@ -223,6 +318,8 @@ void Cube::b()
 
 void Cube::bPrime()
 {
+    this->lastMove = B_PRIME;
+
     fourCycleCorners(1, 0, 5, 6);
 
     updateCornerOrientation(0, 1);
@@ -241,6 +338,8 @@ void Cube::bPrime()
 
 void Cube::b2()
 {
+    this->lastMove = B2;
+
     swapCornerCubies(0, 6);
     swapCornerCubies(1, 5);
 }
@@ -299,6 +398,124 @@ void Cube::flipEdgeOrientation(uint8_t edge_index)
 
     // flip bit
     edge.orientation ^= 1;
+}
+
+// ideally I think this will be checked by calculating
+// the index the state has in the PDB
+// since we haven't done that yet I'll use a slow, crude version
+bool Cube::isSolved(void)
+{
+    return isEdgeSolved() & isCornerSolved();
+}
+
+bool Cube::isCornerSolved(void)
+{
+    for (int i = 0; i < 7; i++){
+        if (this->corners[i].index != this->corners[i + 1].index - 1) return false;
+    }
+
+    for (int i = 0; i < 8; i++){
+        if (this->corners[i].orientation != 0) return false;
+    }
+
+    return true;
+}
+
+bool Cube::isEdgeSolved(void)
+{
+    for (int i = 0; i < 11; i++){
+        if (this->edges[i].index != this->edges[i + 1].index - 1) return false;
+    }
+
+    for (int i = 0; i < 12; i++){
+        if (this->edges[i].orientation != 0) return false;
+    }
+
+    return true;
+}
+
+void Cube::applyMoves(std::string moveList)
+{
+
+    std::istringstream iss(moveList);
+    std::vector<std::string> tokens{std::istream_iterator<std::string>{iss}, 
+                                    std::istream_iterator<std::string>{}};
+
+    for (std::string move : tokens)
+    {
+        if (move.compare("F") == 0)
+        {
+            f();
+        }
+        if (move.compare("F'") == 0)
+        {
+            fPrime();
+        }
+        if (move.compare("F2") == 0)
+        {
+            f2();
+        }
+        if (move.compare("U") == 0)
+        {
+            u();
+        }
+        if (move.compare("U'") == 0)
+        {
+            uPrime();
+        }
+        if (move.compare("U2") == 0)
+        {
+            u2();
+        }
+        if (move.compare("D") == 0)
+        {
+            d();
+        }
+        if (move.compare("D'") == 0)
+        {
+            dPrime();
+        }
+        if (move.compare("D2") == 0)
+        {
+            d2();
+        }
+        if (move.compare("R") == 0)
+        {
+            r();
+        }
+        if (move.compare("R'") == 0)
+        {
+            rPrime();
+        }
+        if (move.compare("R2") == 0)
+        {
+            r2();
+        }
+        if (move.compare("L") == 0)
+        {
+            l();
+        }
+        if (move.compare("L'") == 0)
+        {
+            lPrime();
+        }
+        if (move.compare("L2") == 0)
+        {
+            l2();
+        }
+        if (move.compare("B") == 0)
+        {
+            b();
+        }
+        if (move.compare("B'") == 0)
+        {
+            bPrime();
+        }
+        if (move.compare("B2") == 0)
+        {
+            b2();
+        } 
+    }
 }
 
 
