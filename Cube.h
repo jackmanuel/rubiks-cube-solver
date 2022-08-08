@@ -23,6 +23,9 @@ class Cube
 {
     public:
 
+        static const int NUM_CORNERS = 8;
+        static const int NUM_EDGES = 12;
+
         bool operator==(const Cube &cube) const
         {
             return (this->edges == cube.edges) && (this->corners == cube.corners);
@@ -63,13 +66,16 @@ class Cube
 
         };
 
+
+
         Cube();
         bool isSolved(void);
         bool isEdgeSolved(void);
         bool isCornerSolved(void);
         void printCubeState(void);
         void applyMoves(std::string moveList);
-        std::vector<Cube> generateNeighbours(void);
+        std::vector<Cube> generateNeighbours2(void);
+        std::array<Cubie, 8>& getCorners(void);
 
         void r();
         void rPrime();

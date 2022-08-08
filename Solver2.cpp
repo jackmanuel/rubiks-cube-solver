@@ -24,13 +24,13 @@ std::string Solver2::solve(void)
         Cube current = open.front();
         open.pop();
 
-        neighbours = current.generateNeighbours();
+        neighbours = current.generateNeighbours2();
 
         for (Cube neighbour : neighbours)
         {
             if (neighbour.isCornerSolved()){
                 std::cout << "SOLUTION FOUND!" << std::endl;
-                return "no solution"; 
+                return "solution"; 
             }
             else
             {

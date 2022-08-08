@@ -29,7 +29,7 @@ Cube::Cube()
 void Cube::printCubeState(void)
 {   
     std::cout << "Corners: " << std::endl;
-    for (int i = 0; i < 8; i++){
+    for (int i = 0; i < Cube::NUM_CORNERS; i++){
 
         Cubie corner = this->corners[i];
         printf("(%u, %u) ", corner.index, corner.orientation);
@@ -38,7 +38,7 @@ void Cube::printCubeState(void)
     printf("\n");
 
     std::cout << "Edges: " << std::endl;
-    for (int i = 0; i < 12; i++){
+    for (int i = 0; i < Cube::NUM_EDGES; i++){
 
         Cubie edge = this->edges[i];
         printf("(%u, %u) ", edge.index, edge.orientation);
@@ -47,7 +47,17 @@ void Cube::printCubeState(void)
     printf("\n");
 }
 
-std::vector<Cube> Cube::generateNeighbours(void)
+std::array<Cube::Cubie, 8>& Cube::getCorners(void)
+{
+    return this->corners;
+}
+
+// std::array<Cube::Cubie, 12>& Cube::getEdges(void)
+// {
+//     return this->edges;
+// }
+
+std::vector<Cube> Cube::generateNeighbours2(void)
 {
     std::vector<Cube> result;
 
