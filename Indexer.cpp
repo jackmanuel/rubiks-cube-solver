@@ -33,7 +33,7 @@ Indexer::Indexer()
     }
 }
 
-int Indexer::getCornerIndex(Cube cube)
+uint32_t Indexer::getCornerIndex(Cube cube)
 {
     std::array<Cube::Cubie, Cube::NUM_CORNERS>& corners = cube.getCorners();
 

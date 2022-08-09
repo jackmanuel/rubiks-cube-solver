@@ -20,9 +20,20 @@ std::string Solver2::solve(void)
 
     open.push(this->cube);
 
+    int expanded = 0;
+
     while (!open.empty()){
         Cube current = open.front();
         open.pop();
+
+        printf("expanding node %d\n", expanded);
+        expanded++;
+
+        if (current.isCornerSolved()) 
+        {
+            std::cout << "SOLUTION FOUND!" << std::endl;
+            return "solution";
+        }
 
         neighbours = current.generateNeighbours2();
 

@@ -9,7 +9,7 @@ class Indexer
     
     public:
         Indexer();
-        int getCornerIndex(Cube cube);
+        uint32_t getCornerIndex(Cube cube);
 
     private:
         

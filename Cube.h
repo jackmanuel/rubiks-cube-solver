@@ -72,10 +72,15 @@ class Cube
         bool isSolved(void);
         bool isEdgeSolved(void);
         bool isCornerSolved(void);
+
         void printCubeState(void);
         void applyMoves(std::string moveList);
+
         std::vector<Cube> generateNeighbours2(void);
+        std::vector<Cube> generateNeighbours(void);
         std::array<Cubie, 8>& getCorners(void);
+
+        uint16_t getDepth(void);
 
         void r();
         void rPrime();
@@ -106,8 +111,8 @@ class Cube
 
         std::array<Cubie, 12> edges;
         std::array<Cubie, 8> corners;
-
         move lastMove;
+        uint16_t depth;
 
         void updateCornerOrientation(uint8_t corner_index, uint8_t change);
         void flipEdgeOrientation(uint8_t edge_index);
