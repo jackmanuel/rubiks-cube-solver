@@ -48,20 +48,20 @@ void Cube::printCubeState(void)
     printf("\n");
 }
 
-std::array<Cube::Cubie, 8>& Cube::getCorners(void)
+std::array<Cube::Cubie, Cube::NUM_CORNERS>& Cube::getCorners(void)
 {
     return this->corners;
 }
 
-uint16_t Cube::getDepth(void)
+uint8_t Cube::getDepth(void)
 {
     return this->depth;
 }
 
-// std::array<Cube::Cubie, 12>& Cube::getEdges(void)
-// {
-//     return this->edges;
-// }
+std::array<Cube::Cubie, Cube::NUM_EDGES>& Cube::getEdges(void)
+{
+    return this->edges;
+}
 
 std::vector<Cube> Cube::generateNeighbours2(void)
 {

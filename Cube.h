@@ -78,9 +78,10 @@ class Cube
 
         std::vector<Cube> generateNeighbours2(void);
         std::vector<Cube> generateNeighbours(void);
-        std::array<Cubie, 8>& getCorners(void);
+        std::array<Cubie, Cube::NUM_CORNERS>& getCorners(void);
+        std::array<Cubie, Cube::NUM_EDGES>& getEdges(void);
 
-        uint16_t getDepth(void);
+        uint8_t getDepth(void);
 
         void r();
         void rPrime();
@@ -112,7 +113,7 @@ class Cube
         std::array<Cubie, 12> edges;
         std::array<Cubie, 8> corners;
         move lastMove;
-        uint16_t depth;
+        uint8_t depth;
 
         void updateCornerOrientation(uint8_t corner_index, uint8_t change);
         void flipEdgeOrientation(uint8_t edge_index);
