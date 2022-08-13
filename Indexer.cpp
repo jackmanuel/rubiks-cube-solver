@@ -13,9 +13,18 @@ static constexpr const int NUM_CORNER_ORIENT_RANKS = 2187;
 // this is the number of different edge orientations for 
 // 7 edges. It is 2^7
 static constexpr const int NUM_EDGE_ORIENT_RANKS = 128;
+static constexpr const int NUM_EDGE_ORIENT_RANKS_ALL = 4096;
 
 Indexer::Indexer()
-{
+{   
+    edgeSet1 = {0, 1, 2, 3, 4, 5, 8};
+    edgeSet2 = {0, 6, 7, 8, 9, 10, 11};
+
+    // edgeSet1 = {0, 2, 4, 5, 6, 8, 10};
+    // edgeSet2 = {1, 3, 9, 11, 5, 6, 7};
+
+    edgeSetAll = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
     // precompute number of 1s in integers up to 2^12
     for (int i = 0; i < (1 << Cube::NUM_EDGES); i++)
     {
@@ -55,51 +64,59 @@ uint32_t Indexer::getEdgeIndex1(Cube cube)
 {
     std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
 
-    return (getEdgePermRank(edges, Indexer::E1_START_IND, Indexer::E1_END_IND) * NUM_EDGE_ORIENT_RANKS)
-     + getEdgeOrientRank(edges, Indexer::E1_START_IND, Indexer::E1_END_IND);
+    return (getEdgePermRank(edges, edgeSet1) * NUM_EDGE_ORIENT_RANKS)
+     + getEdgeOrientRank(edges, edgeSet1);
 }
 
 uint32_t Indexer::getEdgeIndex2(Cube cube)
 {
     std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
 
-    return (getEdgePermRank(edges, Indexer::E2_START_IND, Indexer::E2_END_IND) * NUM_EDGE_ORIENT_RANKS)
-     + getEdgeOrientRank(edges, Indexer::E2_START_IND, Indexer::E2_END_IND);
+    return (getEdgePermRank(edges, edgeSet2) * NUM_EDGE_ORIENT_RANKS)
+     + getEdgeOrientRank(edges, edgeSet2);
 }
 
+// this is a bit of a hack. Returns a 64 bit int that
+// has the 32 bits from first edge group and 32 from second
+uint64_t Indexer::getEdgeIndexAll(Cube cube)
+{
+    return ((uint64_t)getEdgeIndex1(cube) << 32) | getEdgeIndex2(cube);
+}
 
-int Indexer::getEdgeOrientRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, int startInd, int endInd)
+template<std::size_t SIZE>
+int Indexer::getEdgeOrientRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, std::array<int, SIZE> edgeSet)
 {
     int res = 0;
     int counter = 0;
-    for (int i = endInd; i >= startInd; i--)
-    {   
-        res |= edges[i].orientation << counter;
+
+    for (int index : edgeSet)
+    {
+        res |= edges[index].orientation << counter;
         counter++;
     }
 
     return res;
 }
 
-int Indexer::getEdgePermRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, int startInd, int endInd)
-{
-
+template<std::size_t SIZE>
+int Indexer::getEdgePermRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, std::array<int, SIZE> edgeSet)
+{   
     // since the last number of code is always 0
     // could probably just make this NUM_CORNERS - 1 size for speed
-    std::array<uint8_t, Indexer::NUM_EDGES_IN_PDB> lehmerCode;
+    std::array<uint8_t, SIZE> lehmerCode;
     std::bitset<Cube::NUM_EDGES> bits;
     
     // first value of code is always first value of permutation
-    lehmerCode[0] = edges[startInd].index;
-    bits.set(Cube::NUM_EDGES - edges[startInd].index - 1);
+    lehmerCode[0] = edges[edgeSet[0]].index;
+    bits.set(Cube::NUM_EDGES - edges[edgeSet[0]].index - 1);
 
     // last value of code always 0 NOT ALWAYS TRUE FOR PARTIAL!
     // lehmerCode[Indexer::NUM_EDGES_IN_PDB - 1] = 0;
-
     int counter = 1;
-    for (int i = startInd + 1; i <= endInd; i++){
-        bits.set(Cube::NUM_EDGES - edges[i].index - 1);
-        lehmerCode[counter] = edges[i].index - onesArray[bits.to_ulong() >> (Cube::NUM_EDGES - edges[i].index)];
+    for (int i = 1; i < (int)SIZE; i++)
+    {
+        bits.set(Cube::NUM_EDGES - edges[edgeSet[i]].index - 1);
+        lehmerCode[counter] = edges[edgeSet[i]].index - onesArray[bits.to_ulong() >> (Cube::NUM_EDGES - edges[edgeSet[i]].index)];
         counter++;
     }
 
@@ -158,14 +175,14 @@ int Indexer::cornerLehmerToBase10(std::array<uint8_t, Cube::NUM_CORNERS>& lehmer
     return res;
 }
 
-int Indexer::edgeLehmerToBase10(std::array<uint8_t, Indexer::NUM_EDGES_IN_PDB>& lehmerCode)
+template<std::size_t SIZE>
+int Indexer::edgeLehmerToBase10(std::array<uint8_t, SIZE>& lehmerCode)
 {
     int res = 0;
-    for (int i = 0; i < Indexer::NUM_EDGES_IN_PDB; i++)
+    for (int i = 0; i < (int)SIZE; i++)
     {
         res += lehmerCode[i] * perms[i];
     }
-
     return res;
 }
 

@@ -215,7 +215,7 @@ std::vector<Cube> Cube::generateNeighbours(void)
         dCube.d();
         result.push_back(dCube);
 
-        dPrimeCube.bPrime();
+        dPrimeCube.dPrime();
         result.push_back(dPrimeCube);
 
         d2Cube.d2();
@@ -225,6 +225,114 @@ std::vector<Cube> Cube::generateNeighbours(void)
     return result;
 }
 
+std::vector<Cube> Cube::generateNeighboursPruned(void)
+{
+    std::vector<Cube> result;
+
+    this->depth++;
+
+    if (this->lastMove != R && this->lastMove != R_PRIME && this->lastMove != R2
+     && this->lastMove != L && this->lastMove != L_PRIME && this->lastMove != L2)
+    {   
+        Cube rCube = *this;
+        Cube rPrimeCube = *this;
+        Cube r2Cube = *this;
+
+        rCube.r();
+        result.push_back(rCube);
+
+        rPrimeCube.rPrime();
+        result.push_back(rPrimeCube);
+
+        r2Cube.r2();
+        result.push_back(r2Cube);
+    }
+
+    
+    if (this->lastMove != U && this->lastMove != U_PRIME && this->lastMove != U2
+     && this->lastMove != D && this->lastMove != D_PRIME && this->lastMove != D2)
+    {   
+        Cube uCube = *this;
+        Cube uPrimeCube = *this;
+        Cube u2Cube = *this;
+
+        uCube.u();
+        result.push_back(uCube);
+
+        uPrimeCube.uPrime();
+        result.push_back(uPrimeCube);
+
+        u2Cube.u2();
+        result.push_back(u2Cube);
+    }
+
+    if (this->lastMove != F && this->lastMove != F_PRIME && this->lastMove != F2
+     && this->lastMove != B && this->lastMove != B_PRIME && this->lastMove != B2)
+    {
+        Cube fCube = *this;
+        Cube fPrimeCube = *this;
+        Cube f2Cube = *this;
+
+        fCube.f();
+        result.push_back(fCube);
+
+        fPrimeCube.fPrime();
+        result.push_back(fPrimeCube);
+
+        f2Cube.f2();
+        result.push_back(f2Cube);
+    }
+
+    if (this->lastMove != L && this->lastMove != L_PRIME && this->lastMove != L2)
+    {
+        Cube lCube = *this;
+        Cube lPrimeCube = *this;
+        Cube l2Cube = *this;
+
+        lCube.l();
+        result.push_back(lCube);
+
+        lPrimeCube.lPrime();
+        result.push_back(lPrimeCube);
+
+        l2Cube.l2();
+        result.push_back(l2Cube);
+    }
+
+    if (this->lastMove != B && this->lastMove != B_PRIME && this->lastMove != B2)
+    {
+        Cube bCube = *this;
+        Cube bPrimeCube = *this;
+        Cube b2Cube = *this;
+
+        bCube.b();
+        result.push_back(bCube);
+
+        bPrimeCube.bPrime();
+        result.push_back(bPrimeCube);
+
+        b2Cube.b2();
+        result.push_back(b2Cube);
+    }
+
+    if (this->lastMove != D && this->lastMove != D_PRIME && this->lastMove != D2)
+    {
+        Cube dCube = *this;
+        Cube dPrimeCube = *this;
+        Cube d2Cube = *this;
+
+        dCube.d();
+        result.push_back(dCube);
+
+        dPrimeCube.dPrime();
+        result.push_back(dPrimeCube);
+
+        d2Cube.d2();
+        result.push_back(d2Cube);
+    }
+    
+    return result;
+}
 
 void Cube::r()
 {
@@ -464,6 +572,9 @@ void Cube::b2()
 
     swapCornerCubies(0, 6);
     swapCornerCubies(1, 5);
+
+    swapEdgeCubies(0, 10);
+    swapEdgeCubies(6, 7);
 }
 
 // outcome of the function:

@@ -9,6 +9,8 @@ for every unique state, add 24 entries to the PDB for 24 symmetries
 
 */
 
+#include "Indexer.h"
+
 class PDBBuilder
 {
     public:
@@ -17,9 +19,13 @@ class PDBBuilder
 
         static void buildCorners(void);
         static void buildEdges1(void);
-        static std::array<uint8_t, NUM_CORNER_RANKS>* getPDB(std::string filename);
+        static std::array<uint8_t, NUM_CORNER_RANKS>* getCornerPDB();
+        static std::array<uint8_t, NUM_EDGE_RANKS>* getEdge1PDB(std::string filename);
+
+        static std::array<uint8_t, NUM_EDGE_RANKS>* testDFS(int depth);
 
     private:
         PDBBuilder();
-        static const int MAX_CORNER_DEPTH = 11;
+        static const int MAX_DEPTH = 11;
+        static void DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database);
 };

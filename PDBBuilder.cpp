@@ -56,7 +56,7 @@ void PDBBuilder::buildCorners(void)
 
             // only push neighbours if not visited
             // and it's less than 12 moves in
-            if (!closed.count(neighbourRank) && neighbour.getDepth() <= 11)
+            if (!closed.count(neighbourRank) && neighbour.getDepth() <= MAX_DEPTH)
             {
                 open.push(neighbour);
                 closed.insert(neighbourRank);
@@ -74,55 +74,11 @@ void PDBBuilder::buildCorners(void)
 void PDBBuilder::buildEdges1(void)
 {
     Indexer indexer;
-
-    std::unordered_set<int32_t> closed;
-    std::stack<Cube> open;
-    std::vector<Cube> neighbours;
     std::array<uint8_t, NUM_EDGE_RANKS>* database = new std::array<uint8_t, NUM_EDGE_RANKS>{0};
 
-    Cube cube;
-    open.push(cube);
-
-    closed.insert(indexer.getEdgeIndex1(cube));
-
-    int counter = 0;
-
-    while (!open.empty()){
-        Cube current = open.top();
-        open.pop();
-
-        if (counter & 1048576)
-        {
-            std::cout << "current depth: " << current.getDepth() << std::endl;
-            std::cout << "open size: " << open.size() << std::endl;
-            std::cout << "closed size: " << closed.size() << std::endl;
-
-            // std::cout << "nodes popped: " << counter << std::endl;
-            counter = 0;
-        }
-        counter++;
-        
-        uint32_t rank = indexer.getEdgeIndex1(current);
-        uint32_t databaseVal = (*database)[rank];
-        if (databaseVal == 0 || databaseVal > current.getDepth())
-        {
-            (*database)[rank] = current.getDepth();
-        }
-
-        neighbours = current.generateNeighbours();
-
-        for (Cube neighbour : neighbours)
-        {
-            uint32_t neighbourRank = indexer.getEdgeIndex1(neighbour);
-
-            // only push neighbours if not visited
-            // and it's less than 12 moves in
-            if (!closed.count(neighbourRank) && neighbour.getDepth() <= 11)
-            {
-                open.push(neighbour);
-                closed.insert(neighbourRank);
-            }
-        }
+    for (uint8_t currDepth = 0; currDepth <= 10; currDepth++)
+    {
+        DFS(indexer, currDepth, database);
     }
 
     std::ofstream writer("edge1DB.data", std::ios::out | std::ios::binary | std::ios::trunc);
@@ -132,11 +88,105 @@ void PDBBuilder::buildEdges1(void)
     delete[] database;
 }
 
+std::array<uint8_t, PDBBuilder::NUM_EDGE_RANKS>* PDBBuilder::testDFS(int depth)
+{
+    Indexer indexer;
+    std::array<uint8_t, NUM_EDGE_RANKS>* database = new std::array<uint8_t, NUM_EDGE_RANKS>{0};
 
-std::array<uint8_t, PDBBuilder::NUM_CORNER_RANKS>* PDBBuilder::getPDB(std::string filename)
+    for (uint8_t currDepth = 0; currDepth <= depth; currDepth++)
+    {
+        DFS(indexer, currDepth, database);
+    }
+
+    return database;
+}
+
+
+void PDBBuilder::DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database)
+{
+    std::cout << "~~~~~~~~~~~~STARTING DEPTH " << (int)maxDepth << std::endl;
+
+    std::stack<Cube> open;
+    std::vector<Cube> neighbours;
+
+    Cube cube;
+    open.push(cube);
+
+    uint32_t rank = indexer.getEdgeIndex1(cube);
+    (*database)[rank] = 0;
+
+    int counter = 0;
+    int populated = 0;
+
+    while (!open.empty()){
+        Cube current = open.top();
+        open.pop();
+
+        if (counter & 8388608)
+        {
+            std::cout << "open size: " << open.size() << std::endl;
+            std::cout << "populated: " << populated << std::endl;
+            std::cout << "depth: " << (int)maxDepth << std::endl;
+            counter = 0;
+        }
+        counter++;
+        
+        uint32_t rank = indexer.getEdgeIndex1(current);
+        uint32_t databaseVal = (*database)[rank];
+
+        if (databaseVal == 0)
+        {
+            populated++;
+            (*database)[rank] = current.getDepth();
+        }
+        
+        // dont generate neighbours if max depth is reached
+        // or database already has entry
+        if (current.getDepth() == maxDepth || databaseVal < current.getDepth())
+        {
+            continue;
+        }
+
+        neighbours = current.generateNeighbours();
+
+        for (Cube neighbour : neighbours)
+        {
+            open.push(neighbour);
+        }
+    }
+
+    std::cout << "Searched depth: " << (int)maxDepth << std::endl;
+    std::cout << "Database entries filled: " << populated << std::endl;
+
+}
+
+
+
+std::array<uint8_t, PDBBuilder::NUM_CORNER_RANKS>* PDBBuilder::getCornerPDB()
 {   
 
     std::array<uint8_t, NUM_CORNER_RANKS>* database = new std::array<uint8_t, NUM_CORNER_RANKS>{0};
+
+    std::ifstream reader("cornerDB do not edit.data", std::ios::in);
+
+    if (!reader.is_open())
+    {
+        throw std::exception();
+    }
+
+    reader.seekg(0, std::ios::beg);
+    reader.read(
+      (char*)database,
+      sizeof(uint8_t) * NUM_CORNER_RANKS);
+    reader.close();
+
+    return database;
+}
+
+std::array<uint8_t, PDBBuilder::NUM_EDGE_RANKS>* PDBBuilder::getEdge1PDB(std::string filename)
+{   
+
+    std::array<uint8_t, NUM_EDGE_RANKS>* database = new std::array<uint8_t, NUM_EDGE_RANKS>{0};
 
     std::ifstream reader(filename, std::ios::in);
 
@@ -148,7 +198,7 @@ std::array<uint8_t, PDBBuilder::NUM_CORNER_RANKS>* PDBBuilder::getPDB(std::strin
     reader.seekg(0, std::ios::beg);
     reader.read(
       (char*)database,
-      sizeof(uint8_t) * NUM_CORNER_RANKS);
+      sizeof(uint8_t) * NUM_EDGE_RANKS);
     reader.close();
 
     return database;

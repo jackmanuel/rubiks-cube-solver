@@ -53,6 +53,11 @@ class Cube
             L_PRIME,
             L2
         };
+
+        enum layer
+        {
+            UP, DOWN, LEFT, RIGHT
+        };
         
         struct Cubie
         {
@@ -78,6 +83,7 @@ class Cube
 
         std::vector<Cube> generateNeighbours2(void);
         std::vector<Cube> generateNeighbours(void);
+        std::vector<Cube> generateNeighboursPruned(void);
         std::array<Cubie, Cube::NUM_CORNERS>& getCorners(void);
         std::array<Cubie, Cube::NUM_EDGES>& getEdges(void);
 
