@@ -19,8 +19,10 @@ class PDBBuilder
 
         static void buildCorners(void);
         static void buildEdges1(void);
+        static void buildEdges2(void);
+
         static std::array<uint8_t, NUM_CORNER_RANKS>* getCornerPDB();
-        static std::array<uint8_t, NUM_EDGE_RANKS>* getEdge1PDB(std::string filename);
+        static std::array<uint8_t, NUM_EDGE_RANKS>* getEdgePDB(std::string filename);
 
         static std::array<uint8_t, NUM_EDGE_RANKS>* testDFS(int depth);
 
@@ -28,4 +30,5 @@ class PDBBuilder
         PDBBuilder();
         static const int MAX_DEPTH = 11;
         static void DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database);
+        static void DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database);
 };
