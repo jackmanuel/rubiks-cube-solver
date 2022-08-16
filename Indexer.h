@@ -12,7 +12,7 @@ class Indexer
         uint32_t getCornerIndex(Cube cube);
         uint32_t getEdgeIndex1(Cube cube);
         uint32_t getEdgeIndex2(Cube cube);
-        uint64_t getEdgeIndexAll(Cube cube);
+        uint16_t getEdgeOrientRankCube(Cube cube);
 
     private:
 

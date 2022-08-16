@@ -16,10 +16,12 @@ class PDBBuilder
     public:
         static const int NUM_CORNER_RANKS = 88179840;
         static const int NUM_EDGE_RANKS = 510935040;
+        static const int NUM_EDGE_ORIENTATIONS = 2048;
 
         static void buildCorners(void);
         static void buildEdges1(void);
         static void buildEdges2(void);
+        static void buildEdgeOrient(void);
 
         static std::array<uint8_t, NUM_CORNER_RANKS>* getCornerPDB();
         static std::array<uint8_t, NUM_EDGE_RANKS>* getEdgePDB(std::string filename);

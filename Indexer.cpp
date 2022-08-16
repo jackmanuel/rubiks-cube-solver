@@ -13,7 +13,6 @@ static constexpr const int NUM_CORNER_ORIENT_RANKS = 2187;
 // this is the number of different edge orientations for 
 // 7 edges. It is 2^7
 static constexpr const int NUM_EDGE_ORIENT_RANKS = 128;
-static constexpr const int NUM_EDGE_ORIENT_RANKS_ALL = 4096;
 
 Indexer::Indexer()
 {   
@@ -90,11 +89,19 @@ uint32_t Indexer::getEdgeIndex2(Cube cube)
      + getEdgeOrientRank(edges, edgeSet2);
 }
 
-// this is a bit of a hack. Returns a 64 bit int that
-// has the 32 bits from first edge group and 32 from second
-uint64_t Indexer::getEdgeIndexAll(Cube cube)
+uint16_t Indexer::getEdgeOrientRankCube(Cube cube)
 {
-    return ((uint64_t)getEdgeIndex1(cube) << 32) | getEdgeIndex2(cube);
+    std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
+
+    uint16_t res = 0;
+
+    // can't flip 1 edge
+    for (int i = 0; i < Cube::NUM_EDGES - 1; i++)
+    {
+        res |= edges[i].orientation << i;
+    }
+
+    return res;
 }
 
 template<std::size_t SIZE>
