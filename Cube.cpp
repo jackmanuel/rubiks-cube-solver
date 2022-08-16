@@ -58,9 +58,19 @@ uint8_t Cube::getDepth(void)
     return this->depth;
 }
 
+void Cube::setDepth(uint8_t newDepth)
+{
+    this->depth = newDepth;
+}
+
 std::array<Cube::Cubie, Cube::NUM_EDGES>& Cube::getEdges(void)
 {
     return this->edges;
+}
+
+Cube::move Cube::getLastMove(void)
+{
+    return this->lastMove;
 }
 
 std::vector<Cube> Cube::generateNeighbours2(void)
@@ -222,6 +232,11 @@ std::vector<Cube> Cube::generateNeighbours(void)
         result.push_back(d2Cube);
     }
     
+    // neighbour cubes are generated with incremented depth
+    // must decrement again so cube function was called on
+    // has its old depth again
+    this->depth--;
+
     return result;
 }
 
@@ -331,6 +346,8 @@ std::vector<Cube> Cube::generateNeighboursPruned(void)
         result.push_back(d2Cube);
     }
     
+    this->depth--;
+
     return result;
 }
 
@@ -751,6 +768,7 @@ void Cube::applyMoves(std::string moveList)
     }
 
     this->lastMove = NONE;
+    this->depth = 0;
 }
 
 

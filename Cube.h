@@ -31,6 +31,11 @@ class Cube
             return (this->edges == cube.edges) && (this->corners == cube.corners);
         }
 
+        bool operator<(const Cube &cube) const
+        {
+            return this->depth < cube.depth;
+        }
+
         enum move
         {
             NONE,
@@ -86,8 +91,10 @@ class Cube
         std::vector<Cube> generateNeighboursPruned(void);
         std::array<Cubie, Cube::NUM_CORNERS>& getCorners(void);
         std::array<Cubie, Cube::NUM_EDGES>& getEdges(void);
+        Cube::move getLastMove(void);
 
         uint8_t getDepth(void);
+        void setDepth(uint8_t newDepth);
 
         void r();
         void rPrime();

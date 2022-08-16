@@ -14,7 +14,7 @@ PDB::PDB(std::string cornerFilename, std::string edge1Filename,
     edge1DB = loadPDB<PDBBuilder::NUM_EDGE_RANKS>(edge1Filename);
     edge2DB = loadPDB<PDBBuilder::NUM_EDGE_RANKS>(edge2Filename);
     orientDB = loadPDB<PDBBuilder::NUM_EDGE_ORIENTATIONS>(orientFilename);
-    std::cout << "Successfully load PDBs!" << std::endl;
+    std::cout << "Successfully loaded PDBs!" << std::endl;
 }
 
 PDB::~PDB(void)

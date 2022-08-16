@@ -5,8 +5,8 @@ CFLAGS  = -g -Wall
 all: solver
 
 
-solver:  test.o Cube.o Solver2.o Indexer.o PDBBuilder.o
-	$(CC) $(CFLAGS) -o solver test.o Cube.o Solver2.o Indexer.o PDBBuilder.o
+solver:  test.o Cube.o Solver2.o Indexer.o PDBBuilder.o PDB.o Solver.o
+	$(CC) $(CFLAGS) -o solver test.o Cube.o Solver2.o Indexer.o PDBBuilder.o PDB.o Solver.o
 
 test.o:  test.cpp
 	$(CC) $(CFLAGS) -c test.cpp
@@ -20,8 +20,11 @@ Solver2.o: Solver2.cpp Solver2.h
 Indexer.o: Indexer.cpp Indexer.h
 	$(CC) $(CFLAGS) -c Indexer.cpp
 
-PDBBuilder.o: PDBBuilder.cpp PDBBuilder.h
-	$(CC) $(CFLAGS) -c PDBBuilder.cpp
+PDB.o: PDB.cpp PDB.h
+	$(CC) $(CFLAGS) -c PDB.cpp
+
+Solver.o: Solver.cpp Solver.h
+	$(CC) $(CFLAGS) -c Solver.cpp
 
 clean: 
 	$(RM) solver *.o *~
