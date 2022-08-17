@@ -39,3 +39,30 @@ end!
 real    117m22.506s
 user    117m20.711s
 sys     0m0.847s
+
+SOLUTION FOUND!
+scramble: F2 L' D2 R B2 R2 U2 L' D2 B2 D2 R2 U R' F' D' U B' R U' R2
+D' F' R2 L2 D B' U' R2 F2 L' F' R' D B U' L2 F2 
+end!
+
+real    151m53.919s
+user    151m47.949s
+sys     0m1.113s
+
+SOLUTION FOUND!
+scramble: F D F B R D' F' L' B' L2 D' R2 D2 R2 F2 L2 D F2 L2 U2 L2
+R2 B' L B' L' D L U2 B L F D2 R' B' D2 R F B2 
+end!
+
+real    357m19.437s
+user    357m9.681s
+sys     0m2.837s
+
+SOLUTION FOUND!
+scramble: L2 D U' L2 U R2 F2 D2 R2 L F2 D' R' B R2 F2 D L F'
+F2 L' U2 L' U' D R F R2 L U2 D' F U2 L' U' F2 L' 
+end!
+
+real    1619m59.157s
+user    1619m36.140s
+sys     0m6.269s
