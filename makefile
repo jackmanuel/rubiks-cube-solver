@@ -1,33 +1,42 @@
 CC = g++
 CFLAGS  = -g -Wall -O3
+BUILDDIR = build
+
+OBJS = $(BUILDDIR)/main.o $(BUILDDIR)/Cube.o $(BUILDDIR)/Solver2.o \
+       $(BUILDDIR)/Indexer.o $(BUILDDIR)/PDB.o $(BUILDDIR)/Solver.o \
+       $(BUILDDIR)/PDBBuilder.o
 
 
 all: solver
 
 
-solver:  main.o Cube.o Solver2.o Indexer.o PDB.o Solver.o PDBBuilder.o
-	$(CC) $(CFLAGS) -o solver main.o Cube.o Solver2.o Indexer.o PDB.o Solver.o PDBBuilder.o
+solver: $(BUILDDIR) $(OBJS)
+	$(CC) $(CFLAGS) -o solver $(OBJS)
 
-main.o:  main.cpp
-	$(CC) $(CFLAGS) -c  main.cpp
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
 
-Cube.o:  Cube.cpp Cube.h
-	$(CC) $(CFLAGS) -c Cube.cpp
+$(BUILDDIR)/main.o: main.cpp
+	$(CC) $(CFLAGS) -c main.cpp -o $@
 
-Solver2.o: Solver2.cpp Solver2.h
-	$(CC) $(CFLAGS) -c Solver2.cpp
+$(BUILDDIR)/Cube.o: Cube.cpp Cube.h
+	$(CC) $(CFLAGS) -c Cube.cpp -o $@
 
-Indexer.o: Indexer.cpp Indexer.h
-	$(CC) $(CFLAGS) -c Indexer.cpp
+$(BUILDDIR)/Solver2.o: Solver2.cpp Solver2.h
+	$(CC) $(CFLAGS) -c Solver2.cpp -o $@
 
-PDB.o: PDB.cpp PDB.h
-	$(CC) $(CFLAGS) -c PDB.cpp
+$(BUILDDIR)/Indexer.o: Indexer.cpp Indexer.h
+	$(CC) $(CFLAGS) -c Indexer.cpp -o $@
 
-Solver.o: Solver.cpp Solver.h
-	$(CC) $(CFLAGS) -c Solver.cpp
+$(BUILDDIR)/PDB.o: PDB.cpp PDB.h
+	$(CC) $(CFLAGS) -c PDB.cpp -o $@
 
-PDBBuilder.o: PDBBuilder.cpp PDBBuilder.h
-	$(CC) $(CFLAGS) -c PDBBuilder.cpp
+$(BUILDDIR)/Solver.o: Solver.cpp Solver.h
+	$(CC) $(CFLAGS) -c Solver.cpp -o $@
 
-clean: 
-	$(RM) solver *.o *~
+$(BUILDDIR)/PDBBuilder.o: PDBBuilder.cpp PDBBuilder.h
+	$(CC) $(CFLAGS) -c PDBBuilder.cpp -o $@
+
+clean:
+	$(RM) solver
+	$(RM) -r $(BUILDDIR)
