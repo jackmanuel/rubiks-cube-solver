@@ -1,15 +1,15 @@
 CC = g++
-CFLAGS  = -g -Wall
+CFLAGS  = -g -Wall -O3
 
 
 all: solver
 
 
-solver:  test.o Cube.o Solver2.o Indexer.o PDBBuilder.o PDB.o Solver.o
-	$(CC) $(CFLAGS) -o solver test.o Cube.o Solver2.o Indexer.o PDBBuilder.o PDB.o Solver.o
+solver:  test.o Cube.o Solver2.o Indexer.o PDB.o Solver.o
+	$(CC) $(CFLAGS) -o solver test.o Cube.o Solver2.o Indexer.o PDB.o Solver.o
 
 test.o:  test.cpp
-	$(CC) $(CFLAGS) -c test.cpp
+	$(CC) $(CFLAGS) -c  test.cpp
 
 Cube.o:  Cube.cpp Cube.h
 	$(CC) $(CFLAGS) -c Cube.cpp
