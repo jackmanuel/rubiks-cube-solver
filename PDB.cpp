@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <algorithm>
+#include <stdexcept>
 
 #include "PDB.h"
 
@@ -19,10 +19,10 @@ PDB::PDB(std::string cornerFilename, std::string edge1Filename,
 
 PDB::~PDB(void)
 {
-    delete[] cornerDB;
-    delete[] edge1DB;
-    delete[] edge2DB;
-    delete[] orientDB;
+    delete cornerDB;
+    delete edge1DB;
+    delete edge2DB;
+    delete orientDB;
 }
 
 int PDB::getMoveCountLowerBound(Cube cube)
@@ -52,7 +52,7 @@ std::array<uint8_t, SIZE>* PDB::loadPDB(std::string filename)
 
     if (!reader.is_open())
     {
-        throw std::exception();
+        throw std::runtime_error("Failed to open pattern database file: " + filename);
     }
 
     reader.seekg(0, std::ios::beg);

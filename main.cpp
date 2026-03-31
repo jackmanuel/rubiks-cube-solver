@@ -1,0 +1,172 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+
+#ifdef _WIN32
+#include <direct.h>
+#define MKDIR(dir) _mkdir(dir)
+#else
+#include <sys/stat.h>
+#define MKDIR(dir) mkdir(dir, 0755)
+#endif
+
+#include "Cube.h"
+#include "PDBBuilder.h"
+#include "Solver.h"
+
+// Database file paths (must match the paths used in Solver.cpp)
+static const std::string DB_DIR = "databases";
+static const std::string CORNER_DB   = DB_DIR + "/cornerDB new.data";
+static const std::string EDGE1_DB    = DB_DIR + "/edge1DB.data";
+static const std::string EDGE2_DB    = DB_DIR + "/edge2DB.data";
+static const std::string ORIENT_DB   = DB_DIR + "/edgeOrientDB safe.data";
+
+static bool fileExists(const std::string& filename)
+{
+    std::ifstream f(filename);
+    return f.good();
+}
+
+static std::vector<std::string> getMissingDatabases()
+{
+    std::vector<std::string> missing;
+    if (!fileExists(CORNER_DB))  missing.push_back(CORNER_DB);
+    if (!fileExists(EDGE1_DB))   missing.push_back(EDGE1_DB);
+    if (!fileExists(EDGE2_DB))   missing.push_back(EDGE2_DB);
+    if (!fileExists(ORIENT_DB))  missing.push_back(ORIENT_DB);
+    return missing;
+}
+
+static void generateDatabases(const std::vector<std::string>& missing)
+{
+    // Create the Databases directory if it doesn't exist
+    MKDIR(DB_DIR.c_str());
+
+    for (const std::string& db : missing)
+    {
+        if (db == CORNER_DB)
+        {
+            std::cout << "\n[1/4] Generating corner pattern database..." << std::endl;
+            std::cout << "       (this is the smallest, ~88M entries)" << std::endl;
+            PDBBuilder::buildCorners();
+            std::cout << "       Done!" << std::endl;
+        }
+        else if (db == EDGE1_DB)
+        {
+            std::cout << "\n[2/4] Generating edge group 1 pattern database..." << std::endl;
+            std::cout << "       (this is large, ~511M entries — may take a long time)" << std::endl;
+            PDBBuilder::buildEdges1();
+            std::cout << "       Done!" << std::endl;
+        }
+        else if (db == EDGE2_DB)
+        {
+            std::cout << "\n[3/4] Generating edge group 2 pattern database..." << std::endl;
+            std::cout << "       (this is large, ~511M entries — may take a long time)" << std::endl;
+            PDBBuilder::buildEdges2();
+            std::cout << "       Done!" << std::endl;
+        }
+        else if (db == ORIENT_DB)
+        {
+            std::cout << "\n[4/4] Generating edge orientation pattern database..." << std::endl;
+            std::cout << "       (this is the smallest, 2048 entries — very fast)" << std::endl;
+            PDBBuilder::buildEdgeOrient();
+            std::cout << "       Done!" << std::endl;
+        }
+    }
+}
+
+int main(int argc, char const *argv[])
+{
+    if (argc < 2)
+    {
+        std::cerr << "Usage: ./solver \"<scramble>\"" << std::endl;
+        std::cerr << "Example: ./solver \"D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'\"" << std::endl;
+        return 1;
+    }
+
+    // Check for missing pattern databases before doing anything
+    std::vector<std::string> missing = getMissingDatabases();
+
+    if (!missing.empty())
+    {
+        std::cerr << "========================================" << std::endl;
+        std::cerr << " Pattern databases not found!" << std::endl;
+        std::cerr << "========================================" << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "The solver requires 4 pattern database files in the '" << DB_DIR << "/' directory." << std::endl;
+        std::cerr << "The following file(s) are missing:" << std::endl;
+        std::cerr << std::endl;
+        for (const std::string& db : missing)
+        {
+            std::cerr << "  - " << db << std::endl;
+        }
+        std::cerr << std::endl;
+        std::cerr << "These databases can be generated automatically, but be aware:" << std::endl;
+        std::cerr << "  * The edge databases (~511M entries each) may take HOURS to generate." << std::endl;
+        std::cerr << "  * Generation requires significant memory (1GB+)." << std::endl;
+        std::cerr << "  * The total database size on disk is ~1GB." << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "Would you like to generate the missing databases now? [y/N]: ";
+
+        std::string response;
+        std::getline(std::cin, response);
+
+        if (response == "y" || response == "Y" || response == "yes" || response == "Yes")
+        {
+            std::cout << std::endl;
+            std::cout << "Generating missing pattern databases..." << std::endl;
+            std::cout << "This may take a very long time. Do not interrupt the process." << std::endl;
+
+            try
+            {
+                generateDatabases(missing);
+                std::cout << std::endl;
+                std::cout << "All databases generated successfully!" << std::endl;
+                std::cout << "Proceeding with solve..." << std::endl;
+                std::cout << std::endl;
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "Error during database generation: " << e.what() << std::endl;
+                return 1;
+            }
+        }
+        else
+        {
+            std::cerr << std::endl;
+            std::cerr << "Cannot solve without pattern databases. Exiting." << std::endl;
+            return 1;
+        }
+    }
+
+    try
+    {
+        std::cout << "begin!" << std::endl;
+
+        Cube cube;
+
+        cube.applyMoves(argv[1]);
+
+        std::string solution = Solver::solve(cube);
+
+        std::cout << "scramble: " << argv[1] << std::endl;
+        std::cout << solution << std::endl;
+        std::cout << "end!" << std::endl;
+    }
+    catch (const std::runtime_error& e)
+    {
+        std::cerr << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << std::endl;
+        std::cerr << "An unexpected error occurred: " << e.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}

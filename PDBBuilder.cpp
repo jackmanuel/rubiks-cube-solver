@@ -73,11 +73,11 @@ void PDBBuilder::buildCorners(void)
         }
     }
 
-    std::ofstream writer("cornerDB safety.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer("databases/cornerDB new.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_CORNER_RANKS);
     writer.close();
 
-    delete[] database;
+    delete database;
 }
 
 void PDBBuilder::buildEdges1(void)
@@ -104,11 +104,11 @@ void PDBBuilder::buildEdges1(void)
     (*database)[indexer.getEdgeIndex1(cube)] = 0;
 
 
-    std::ofstream writer("edge1DB safety.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer("databases/edge1DB.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_RANKS);
     writer.close();
 
-    delete[] database;
+    delete database;
 }
 
 void PDBBuilder::buildEdges2(void)
@@ -134,11 +134,11 @@ void PDBBuilder::buildEdges2(void)
     Cube cube;
     (*database)[indexer.getEdgeIndex2(cube)] = 0;
 
-    std::ofstream writer("edge2DB safety.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer("databases/edge2DB.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_RANKS);
     writer.close();
 
-    delete[] database;
+    delete database;
 }
 
 std::array<uint8_t, PDBBuilder::NUM_EDGE_RANKS>* PDBBuilder::testDFS(int depth)
@@ -332,9 +332,9 @@ void PDBBuilder::buildEdgeOrient(void)
 
     printf("populated: %d\n", populated);
 
-    std::ofstream writer("edgeOrientDB 23232.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer("databases/edgeOrientDB safe.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_ORIENTATIONS);
     writer.close();
 
-    delete[] database;
+    delete database;
 }
