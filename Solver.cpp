@@ -12,8 +12,8 @@ Solver::Solver(void)
 
 std::string Solver::solve(Cube cube)
 {
-    PDB PDB("databases/cornerDB new.data", "databases/edge1DB.data", 
-            "databases/edge2DB.data", "databases/edgeOrientDB safe.data");
+    PDB PDB("databases/cornerDB.data", "databases/edge1DB.data", 
+            "databases/edge2DB.data", "databases/edgeOrientDB.data");
 
     Cube startingCube = cube;
     std::stack<Cube> open;

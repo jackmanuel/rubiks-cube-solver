@@ -73,7 +73,7 @@ void PDBBuilder::buildCorners(void)
         }
     }
 
-    std::ofstream writer("databases/cornerDB new.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer("databases/cornerDB.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_CORNER_RANKS);
     writer.close();
 
@@ -332,7 +332,7 @@ void PDBBuilder::buildEdgeOrient(void)
 
     printf("populated: %d\n", populated);
 
-    std::ofstream writer("databases/edgeOrientDB safe.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer("databases/edgeOrientDB.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_ORIENTATIONS);
     writer.close();
 
