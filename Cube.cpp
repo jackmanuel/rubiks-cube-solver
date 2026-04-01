@@ -7,6 +7,16 @@
 
 #include "Cube.h"
 
+// Pre-computed solved states for memcmp-based goal detection.
+// Solved state: sequential indices (0..N-1) with all orientations 0.
+const std::array<Cube::Cubie, Cube::NUM_CORNERS> Cube::SOLVED_CORNERS = {{
+    {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0}, {6,0}, {7,0}
+}};
+const std::array<Cube::Cubie, Cube::NUM_EDGES> Cube::SOLVED_EDGES = {{
+    {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0},
+    {6,0}, {7,0}, {8,0}, {9,0}, {10,0}, {11,0}
+}};
+
 // constructs solved cube
 Cube::Cube()
 {
@@ -649,38 +659,23 @@ void Cube::flipEdgeOrientation(uint8_t edge_index)
     edge.orientation ^= 1;
 }
 
-// ideally I think this will be checked by calculating
-// the index the state has in the PDB
-// since we haven't done that yet I'll use a slow, crude version
+// memcmp-based goal test: compares the entire corners/edges arrays
+// against pre-computed solved state in a single operation per array.
 bool Cube::isSolved(void)
 {
-    return isEdgeSolved() & isCornerSolved();
+    return isCornerSolved() && isEdgeSolved();
 }
 
 bool Cube::isCornerSolved(void)
 {
-    for (int i = 0; i < 7; i++){
-        if (this->corners[i].index != this->corners[i + 1].index - 1) return false;
-    }
-
-    for (int i = 0; i < 8; i++){
-        if (this->corners[i].orientation != 0) return false;
-    }
-
-    return true;
+    return std::memcmp(corners.data(), SOLVED_CORNERS.data(),
+                       NUM_CORNERS * sizeof(Cubie)) == 0;
 }
 
 bool Cube::isEdgeSolved(void)
 {
-    for (int i = 0; i < 11; i++){
-        if (this->edges[i].index != this->edges[i + 1].index - 1) return false;
-    }
-
-    for (int i = 0; i < 12; i++){
-        if (this->edges[i].orientation != 0) return false;
-    }
-
-    return true;
+    return std::memcmp(edges.data(), SOLVED_EDGES.data(),
+                       NUM_EDGES * sizeof(Cubie)) == 0;
 }
 
 void Cube::applyMoves(std::string moveList)

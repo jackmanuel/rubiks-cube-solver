@@ -16,6 +16,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 #include <array>
 #include <string>
 #include <vector>
@@ -128,6 +129,9 @@ class Cube
         std::array<Cubie, 8> corners;
         move lastMove;
         uint8_t depth;
+
+        static const std::array<Cubie, NUM_CORNERS> SOLVED_CORNERS;
+        static const std::array<Cubie, NUM_EDGES> SOLVED_EDGES;
 
         void updateCornerOrientation(uint8_t corner_index, uint8_t change);
         void flipEdgeOrientation(uint8_t edge_index);
