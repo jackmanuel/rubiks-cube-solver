@@ -88,10 +88,9 @@ bool Solver::dfs(
         std::cout << "\rsearching depth " << maxDepth << "... (" << formatNumber(statesChecked) << " states checked)      " << std::flush;
     }
 
-    // Goal test: all coordinates at solved state
-    // Corner, e1, and orient are 0 when solved.
-    // e2 has a non-zero index solved state check.
-    if (cIdx == 0 && e1Idx == 0 && e2Idx == SOLVED_E2_IDX && orient == 0) return true;
+    // Goal test: heuristic is 0 if and only if the cube is solved.
+    // This works because the pattern databases collectively cover all 20 movable pieces.
+    if (h == 0) return true;
 
     // Try all 18 moves
     for (int move = 0; move < NUM_MOVES; move++)
@@ -150,7 +149,7 @@ std::string Solver::solve(Cube cube)
     int maxDepth = (int)h;
 
     // Check if already solved
-    if (cIdx == 0 && e1Idx == 0 && e2Idx == SOLVED_E2_IDX && orient == 0)
+    if (h == 0)
     {
         std::cout << "The cube is already solved!" << std::endl;
         return "";
