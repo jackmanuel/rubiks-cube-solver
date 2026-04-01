@@ -8,6 +8,7 @@
 #include "PDBBuilder.h"
 #include "Cube.h"
 #include "Indexer.h"
+#include "ProgressBar.h"
 
 PDBBuilder::PDBBuilder()
 {
@@ -27,20 +28,12 @@ void PDBBuilder::buildCorners(void)
     open.push(cube);
     closed.insert(indexer.getCornerIndex(cube));
 
-    int counter = 0;
-    int populated = 0;
+    uint64_t populated = 0;
+    ProgressBar progress("Corners", NUM_CORNER_RANKS);
+
     while (!open.empty()){
         Cube current = open.front();
         open.pop();
-
-
-        if (counter & (1 << 20))
-        {
-            std::cout << "open size: " << open.size() << std::endl;
-            std::cout << "populated: " << populated << std::endl;
-            counter = 0;
-        }
-        counter++;
 
         uint32_t rank = indexer.getCornerIndex(current);
         uint32_t databaseVal = (*database)[rank];
@@ -49,6 +42,7 @@ void PDBBuilder::buildCorners(void)
         {
             (*database)[rank] = current.getDepth();
             populated++;
+            progress.update(populated);
         }
         
         if (databaseVal != 0 || current.getDepth() == 11)
@@ -73,6 +67,8 @@ void PDBBuilder::buildCorners(void)
         }
     }
 
+    progress.finish();
+
     std::ofstream writer("databases/cornerDB.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_CORNER_RANKS);
     writer.close();
@@ -85,10 +81,16 @@ void PDBBuilder::buildEdges1(void)
     Indexer indexer;
     std::array<uint8_t, NUM_EDGE_RANKS>* database = new std::array<uint8_t, NUM_EDGE_RANKS>{0};
 
+    uint64_t totalPopulated = 0;
+    ProgressBar progress("Edge 1 ", NUM_EDGE_RANKS);
+
     for (uint8_t currDepth = 0; currDepth <= 10; currDepth++)
     {
-        DFS(indexer, currDepth, database);
+        progress.setDepth(currDepth, 10);
+        DFS(indexer, currDepth, database, &progress, &totalPopulated);
     }
+
+    progress.finish();
 
     // all database values not filled in must be 11 moves
     for (int i = 0; i < NUM_EDGE_RANKS; i++)
@@ -116,10 +118,16 @@ void PDBBuilder::buildEdges2(void)
     Indexer indexer;
     std::array<uint8_t, NUM_EDGE_RANKS>* database = new std::array<uint8_t, NUM_EDGE_RANKS>{0};
 
+    uint64_t totalPopulated = 0;
+    ProgressBar progress("Edge 2 ", NUM_EDGE_RANKS);
+
     for (uint8_t currDepth = 0; currDepth <= 10; currDepth++)
     {
-        DFS2(indexer, currDepth, database);
+        progress.setDepth(currDepth, 10);
+        DFS2(indexer, currDepth, database, &progress, &totalPopulated);
     }
+
+    progress.finish();
 
     // all database values not filled in must be 11 moves
     for (int i = 0; i < NUM_EDGE_RANKS; i++)
@@ -169,39 +177,30 @@ std::array<uint8_t, PDBBuilder::NUM_EDGE_RANKS>* PDBBuilder::testDFS(int depth)
 }
 
 
-void PDBBuilder::DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database)
+void PDBBuilder::DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database,
+                     ProgressBar* progress, uint64_t* totalPopulated)
 {
-    std::cout << "~~~~~~~~~~~~STARTING DEPTH " << (int)maxDepth << std::endl;
-
     std::stack<Cube> open;
     std::vector<Cube> neighbours;
 
     Cube cube;
     open.push(cube);
 
-    int counter = 0;
-    int populated = 0;
-
     while (!open.empty()){
         Cube current = open.top();
         open.pop();
-
-        if (counter & 8388608)
-        {
-            std::cout << "open size: " << open.size() << std::endl;
-            std::cout << "populated: " << populated << std::endl;
-            std::cout << "depth: " << (int)maxDepth << std::endl;
-            counter = 0;
-        }
-        counter++;
         
         uint32_t rank = indexer.getEdgeIndex1(current);
         uint32_t databaseVal = (*database)[rank];
 
         if (databaseVal == 0)
         {
-            populated++;
             (*database)[rank] = current.getDepth();
+            if (totalPopulated && progress)
+            {
+                (*totalPopulated)++;
+                progress->update(*totalPopulated);
+            }
         }
         
         // dont generate neighbours if max depth is reached
@@ -218,45 +217,33 @@ void PDBBuilder::DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_
             open.push(neighbour);
         }
     }
-
-    std::cout << "Searched depth: " << (int)maxDepth << std::endl;
-    std::cout << "Database entries filled: " << populated << std::endl;
 }
 
 
-void PDBBuilder::DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database)
+void PDBBuilder::DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database,
+                      ProgressBar* progress, uint64_t* totalPopulated)
 {
-    std::cout << "~~~~~~~~~~~~STARTING DEPTH " << (int)maxDepth << std::endl;
-
     std::stack<Cube> open;
     std::vector<Cube> neighbours;
 
     Cube cube;
     open.push(cube);
 
-    int counter = 0;
-    int populated = 0;
-
     while (!open.empty()){
         Cube current = open.top();
         open.pop();
-
-        if (counter & 8388608)
-        {
-            std::cout << "open size: " << open.size() << std::endl;
-            std::cout << "populated: " << populated << std::endl;
-            std::cout << "depth: " << (int)maxDepth << std::endl;
-            counter = 0;
-        }
-        counter++;
         
         uint32_t rank = indexer.getEdgeIndex2(current);
         uint32_t databaseVal = (*database)[rank];
 
         if (databaseVal == 0)
         {
-            populated++;
             (*database)[rank] = current.getDepth();
+            if (totalPopulated && progress)
+            {
+                (*totalPopulated)++;
+                progress->update(*totalPopulated);
+            }
         }
         
         // dont generate neighbours if max depth is reached
@@ -273,9 +260,6 @@ void PDBBuilder::DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM
             open.push(neighbour);
         }
     }
-
-    std::cout << "Searched depth: " << (int)maxDepth << std::endl;
-    std::cout << "Database entries filled: " << populated << std::endl;
 }
 
 
@@ -294,7 +278,8 @@ void PDBBuilder::buildEdgeOrient(void)
     open.push(cube);
     closed.insert(indexer.getEdgeOrientRankCube(cube));
 
-    int populated = 0;
+    uint64_t populated = 0;
+    ProgressBar progress("Orient ", NUM_EDGE_ORIENTATIONS);
 
     while (!open.empty())
     {
@@ -308,6 +293,7 @@ void PDBBuilder::buildEdgeOrient(void)
         {
             (*database)[rank] = current.getDepth();
             populated++;
+            progress.update(populated);
         }
         
         if (databaseVal != 0)
@@ -330,7 +316,7 @@ void PDBBuilder::buildEdgeOrient(void)
         }
     }
 
-    printf("populated: %d\n", populated);
+    progress.finish();
 
     std::ofstream writer("databases/edgeOrientDB.data", std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_ORIENTATIONS);

@@ -9,7 +9,12 @@ for every unique state, add 24 entries to the PDB for 24 symmetries
 
 */
 
+#include <string>
+#include <cstdint>
+
 #include "Indexer.h"
+
+class ProgressBar;
 
 class PDBBuilder
 {
@@ -31,6 +36,8 @@ class PDBBuilder
     private:
         PDBBuilder();
         static const int MAX_DEPTH = 11;
-        static void DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database);
-        static void DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database);
+        static void DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database,
+                        ProgressBar* progress = nullptr, uint64_t* totalPopulated = nullptr);
+        static void DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database,
+                         ProgressBar* progress = nullptr, uint64_t* totalPopulated = nullptr);
 };
