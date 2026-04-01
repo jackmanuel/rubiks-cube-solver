@@ -678,6 +678,22 @@ bool Cube::isEdgeSolved(void)
                        NUM_EDGES * sizeof(Cubie)) == 0;
 }
 
+// Function pointer table for fast move dispatch by index (0-17)
+// Order: R,R',R2, U,U',U2, F,F',F2, D,D',D2, B,B',B2, L,L',L2
+static void (Cube::*MOVE_FUNCS[Cube::NUM_MOVES])() = {
+    &Cube::r, &Cube::rPrime, &Cube::r2,
+    &Cube::u, &Cube::uPrime, &Cube::u2,
+    &Cube::f, &Cube::fPrime, &Cube::f2,
+    &Cube::d, &Cube::dPrime, &Cube::d2,
+    &Cube::b, &Cube::bPrime, &Cube::b2,
+    &Cube::l, &Cube::lPrime, &Cube::l2
+};
+
+void Cube::applyMoveByIndex(Cube& cube, int moveIndex)
+{
+    (cube.*MOVE_FUNCS[moveIndex])();
+}
+
 void Cube::applyMoves(std::string moveList)
 {
     std::istringstream iss(moveList);

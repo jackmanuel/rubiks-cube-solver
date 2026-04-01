@@ -15,6 +15,7 @@
 #include "Cube.h"
 #include "PDBBuilder.h"
 #include "Solver.h"
+#include "TransitionTable.h"
 #include "DatabaseConstants.h"
 
 using namespace DatabaseConstants;
@@ -84,6 +85,7 @@ int main(int argc, char const *argv[])
     {
         std::cerr << "Usage: ./solver \"<scramble>\"" << std::endl;
         std::cerr << "       ./solver --build <corners|edge1|edge2|orient|all>" << std::endl;
+        std::cerr << "       ./solver --build-tables" << std::endl;
         std::cerr << "Example: ./solver \"D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'\"" << std::endl;
         return 1;
     }
@@ -125,6 +127,22 @@ int main(int argc, char const *argv[])
         catch (const std::exception& e)
         {
             std::cerr << "\nError during database generation: " << e.what() << std::endl;
+            return 1;
+        }
+        return 0;
+    }
+
+    if (std::string(argv[1]) == "--build-tables")
+    {
+        MKDIR(DB_DIR.c_str());
+        try
+        {
+            TransitionTable::generate();
+            std::cout << "\nTransition tables generated and saved." << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "\nError during table generation: " << e.what() << std::endl;
             return 1;
         }
         return 0;
@@ -189,8 +207,11 @@ int main(int argc, char const *argv[])
     {
         std::cout << "Starting program." << std::endl;
 
-        Cube cube;
+        // Initialize transition tables (load from disk or generate)
+        MKDIR(DB_DIR.c_str());
+        TransitionTable::init();
 
+        Cube cube;
         cube.applyMoves(argv[1]);
 
         std::string solution = Solver::solve(cube);
@@ -200,18 +221,22 @@ int main(int argc, char const *argv[])
         {
             std::cout << "Solution: " << solution << std::endl;
         }
+
+        TransitionTable::cleanup();
         std::cout << "Exiting program." << std::endl;
     }
     catch (const std::runtime_error& e)
     {
         std::cerr << std::endl;
         std::cerr << "Error: " << e.what() << std::endl;
+        TransitionTable::cleanup();
         return 1;
     }
     catch (const std::exception& e)
     {
         std::cerr << std::endl;
         std::cerr << "An unexpected error occurred: " << e.what() << std::endl;
+        TransitionTable::cleanup();
         return 1;
     }
 

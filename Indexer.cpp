@@ -1,6 +1,7 @@
 #include <bitset>
 #include <array>
 #include <cstdio>
+#include <vector>
 
 #include "Indexer.h"
 #include "Cube.h"
@@ -103,6 +104,86 @@ uint16_t Indexer::getEdgeOrientRankCube(Cube cube)
     return res;
 }
 
+// ========= Convenience wrappers for decomposed ranking =========
+
+int Indexer::getCornerPermRankFromCube(Cube cube)
+{
+    std::array<Cube::Cubie, Cube::NUM_CORNERS>& corners = cube.getCorners();
+    return getCornerPermRank(corners);
+}
+
+int Indexer::getCornerOrientRankFromCube(Cube cube)
+{
+    std::array<Cube::Cubie, Cube::NUM_CORNERS>& corners = cube.getCorners();
+    return getCornerOrientRank(corners);
+}
+
+int Indexer::getEdgePermRank1FromCube(Cube cube)
+{
+    std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
+    int found = 0;
+    for (int i = 0; i < Cube::NUM_EDGES; i++)
+    {
+        if (edges[i].index < Indexer::NUM_EDGES_IN_PDB)
+        {
+            edgeSet1[edges[i].index] = i;
+            found++;
+        }
+        if (found == Indexer::NUM_EDGES_IN_PDB) { break; }
+    }
+    return getEdgePermRank(edges, edgeSet1);
+}
+
+int Indexer::getEdgeOrientRank1FromCube(Cube cube)
+{
+    std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
+    int found = 0;
+    for (int i = 0; i < Cube::NUM_EDGES; i++)
+    {
+        if (edges[i].index < Indexer::NUM_EDGES_IN_PDB)
+        {
+            edgeSet1[edges[i].index] = i;
+            found++;
+        }
+        if (found == Indexer::NUM_EDGES_IN_PDB) { break; }
+    }
+    return getEdgeOrientRank(edges, edgeSet1);
+}
+
+int Indexer::getEdgePermRank2FromCube(Cube cube)
+{
+    std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
+    int found = 0;
+    for (int i = 0; i < Cube::NUM_EDGES; i++)
+    {
+        if (edges[i].index >= 5)
+        {
+            edgeSet2[edges[i].index - 5] = i;
+            found++;
+        }
+        if (found == Indexer::NUM_EDGES_IN_PDB) { break; }
+    }
+    return getEdgePermRank(edges, edgeSet2);
+}
+
+int Indexer::getEdgeOrientRank2FromCube(Cube cube)
+{
+    std::array<Cube::Cubie, Cube::NUM_EDGES>& edges = cube.getEdges();
+    int found = 0;
+    for (int i = 0; i < Cube::NUM_EDGES; i++)
+    {
+        if (edges[i].index >= 5)
+        {
+            edgeSet2[edges[i].index - 5] = i;
+            found++;
+        }
+        if (found == Indexer::NUM_EDGES_IN_PDB) { break; }
+    }
+    return getEdgeOrientRank(edges, edgeSet2);
+}
+
+// ========= Orientation ranking =========
+
 template<std::size_t SIZE>
 int Indexer::getEdgeOrientRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, std::array<int, SIZE> edgeSet)
 {
@@ -117,6 +198,8 @@ int Indexer::getEdgeOrientRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, 
 
     return res;
 }
+
+// ========= Permutation ranking =========
 
 template<std::size_t SIZE>
 int Indexer::getEdgePermRank(std::array<Cube::Cubie, Cube::NUM_EDGES>& edges, std::array<int, SIZE> edgeSet)
@@ -217,3 +300,104 @@ int Indexer::fac(int n)
     if (n == 0 || n == 1) { return 1; }
     else return n * fac(n - 1);
 }
+
+// ========= Unranking functions =========
+
+void Indexer::unrankCornerPerm(int permRank, std::array<uint8_t, Cube::NUM_CORNERS>& perm)
+{
+    // Reverse the Lehmer code: extract digits by dividing by factorials
+    std::array<uint8_t, Cube::NUM_CORNERS> lehmerCode;
+    int remainder = permRank;
+    
+    for (int i = 0; i < Cube::NUM_CORNERS; i++)
+    {
+        // factorial[j] = j!, and the encoding is:
+        // rank = lehmerCode[0]*7! + lehmerCode[1]*6! + ... + lehmerCode[7]*0!
+        int factVal = factorial[Cube::NUM_CORNERS - 1 - i];
+        lehmerCode[i] = remainder / factVal;
+        remainder = remainder % factVal;
+    }
+    
+    // Reconstruct permutation from Lehmer code using available set
+    std::vector<uint8_t> available;
+    for (int i = 0; i < Cube::NUM_CORNERS; i++)
+    {
+        available.push_back(i);
+    }
+    
+    for (int i = 0; i < Cube::NUM_CORNERS; i++)
+    {
+        perm[i] = available[lehmerCode[i]];
+        available.erase(available.begin() + lehmerCode[i]);
+    }
+}
+
+void Indexer::unrankCornerOrient(int orientRank, std::array<uint8_t, Cube::NUM_CORNERS>& orient)
+{
+    // Decode base-3 digits
+    // Encoding: orient[6]*3^0 + orient[5]*3^1 + ... + orient[0]*3^6
+    int remainder = orientRank;
+    int sum = 0;
+    
+    for (int i = Cube::NUM_CORNERS - 2; i >= 0; i--)
+    {
+        orient[i] = remainder % 3;
+        remainder /= 3;
+        sum += orient[i];
+    }
+    
+    // 8th corner orientation determined by constraint: sum must be 0 mod 3
+    orient[Cube::NUM_CORNERS - 1] = (3 - (sum % 3)) % 3;
+}
+
+void Indexer::unrankEdgePerm(int permRank, std::array<int, NUM_EDGES_IN_PDB>& positions)
+{
+    // Reverse the partial Lehmer code for P(12,7)
+    // rank = lehmerCode[0]*perms[0] + lehmerCode[1]*perms[1] + ... + lehmerCode[6]*perms[6]
+    std::array<uint8_t, NUM_EDGES_IN_PDB> lehmerCode;
+    int remainder = permRank;
+    
+    for (int i = 0; i < NUM_EDGES_IN_PDB; i++)
+    {
+        lehmerCode[i] = remainder / perms[i];
+        remainder = remainder % perms[i];
+    }
+    
+    // Reconstruct positions from Lehmer code using available set
+    std::vector<int> available;
+    for (int i = 0; i < Cube::NUM_EDGES; i++)
+    {
+        available.push_back(i);
+    }
+    
+    for (int i = 0; i < NUM_EDGES_IN_PDB; i++)
+    {
+        positions[i] = available[lehmerCode[i]];
+        available.erase(available.begin() + lehmerCode[i]);
+    }
+}
+
+void Indexer::unrankFullEdgeOrient(uint16_t orientRank, std::array<uint8_t, Cube::NUM_EDGES>& orient)
+{
+    // Decode 11 bits, compute 12th from parity
+    uint16_t val = orientRank;
+    int sum = 0;
+    
+    for (int i = 0; i < Cube::NUM_EDGES - 1; i++)
+    {
+        orient[i] = val & 1;
+        sum += orient[i];
+        val >>= 1;
+    }
+    
+    // 12th edge orientation: parity constraint (sum must be even)
+    orient[Cube::NUM_EDGES - 1] = sum & 1;
+}
+
+// Explicit template instantiations for templates used across translation units
+template int Indexer::getEdgePermRank<7>(std::array<Cube::Cubie, Cube::NUM_EDGES>&, std::array<int, 7>);
+template int Indexer::getEdgeOrientRank<7>(std::array<Cube::Cubie, Cube::NUM_EDGES>&, std::array<int, 7>);
+template int Indexer::edgeLehmerToBase10<7>(std::array<uint8_t, 7>&);
+template int Indexer::getEdgePermRank<12>(std::array<Cube::Cubie, Cube::NUM_EDGES>&, std::array<int, 12>);
+template int Indexer::getEdgeOrientRank<12>(std::array<Cube::Cubie, Cube::NUM_EDGES>&, std::array<int, 12>);
+template int Indexer::edgeLehmerToBase10<12>(std::array<uint8_t, 12>&);

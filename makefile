@@ -4,7 +4,7 @@ BUILDDIR = build
 
 OBJS = $(BUILDDIR)/main.o $(BUILDDIR)/Cube.o $(BUILDDIR)/Solver2.o \
        $(BUILDDIR)/Indexer.o $(BUILDDIR)/PDB.o $(BUILDDIR)/Solver.o \
-       $(BUILDDIR)/PDBBuilder.o
+       $(BUILDDIR)/PDBBuilder.o $(BUILDDIR)/TransitionTable.o
 
 
 all: solver
@@ -36,6 +36,9 @@ $(BUILDDIR)/Solver.o: Solver.cpp Solver.h
 
 $(BUILDDIR)/PDBBuilder.o: PDBBuilder.cpp PDBBuilder.h
 	$(CC) $(CFLAGS) -c PDBBuilder.cpp -o $@
+
+$(BUILDDIR)/TransitionTable.o: TransitionTable.cpp TransitionTable.h
+	$(CC) $(CFLAGS) -c TransitionTable.cpp -o $@
 
 clean:
 	$(RM) solver

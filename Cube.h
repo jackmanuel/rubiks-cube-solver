@@ -27,6 +27,7 @@ class Cube
 
         static const int NUM_CORNERS = 8;
         static const int NUM_EDGES = 12;
+        static const int NUM_MOVES = 18;
 
         bool operator==(const Cube &cube) const
         {
@@ -121,6 +122,10 @@ class Cube
         void b();
         void bPrime();
         void b2();
+
+        // Dispatch: apply move by integer index (0-17)
+        // Order: R,R',R2, U,U',U2, F,F',F2, D,D',D2, B,B',B2, L,L',L2
+        static void applyMoveByIndex(Cube& cube, int moveIndex);
 
 
     private:
