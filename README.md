@@ -1,26 +1,88 @@
-417 Group Project
+# Optimal Rubik's Cube Solver
 
+An optimal Rubik's Cube solver implementing **Korf's IDA\* Algorithm** with **Pattern Databases (PDBs)**. This program finds the shortest possible sequence of moves to solve any scrambled cube.
 
-Project is configured to compile on Linux using g++.
+---
 
-The project requires 4 database files totalling just over 1GB to run. I tried to upload the files to git LFS, but after many hours of troubleshooting I could not get it to work. I contacted the helpdesk for advice but they did not respond. The only option I can think of is to link a google drive folder with the databases. 
+## Project Origin & History
 
-This is the link: https://drive.google.com/drive/folders/1phuwpdroP99XY_4mIuJraz4aWBAo2ALX?usp=sharing
+This project was originally developed as a university group project for **CMPT 417** (Intelligent Systems) at **Simon Fraser University** during the **Summer 2022** semester, taught by **Hang Ma**.
 
-The project is formatted to have the 4 files (with the names they have on google drive) in a subdirecty of the source code called "Databases". If desired the filepaths to the database files can be modified with the PDB class (PDB.cpp).
+### Original Collaboration
+- **Jack Manuel**
+- **Keene Upathamp**
+- **Tara H. Kazemi**
 
-To run:
+The original state of the project as submitted has been preserved and can be found under the GitHub tag **[v1.1-archive](https://github.com/jackmanuel/rubiks-cube-solver/tree/v1.1-archive)**.
 
-run command 'make'
-run command './solver "<scramble>"'
+The core implementation was heavily inspired by Benjamin Botto's Medium article:  
+[Implementing an Optimal Rubik’s Cube Solver using Korf’s Algorithm](https://medium.com/@benjamin.botto/implementing-an-optimal-rubiks-cube-solver-using-korf-s-algorithm-bf750b332cf9)
 
-where scramble is a string of moves.
-For example, "D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'"
+---
 
-The output will be a (shortest possible length) list of moves to return the scrambled cube to the solved state.
+## 2026 Revival
 
-Typical scrambles may take hours to solve, so in the interest of time I recommend testing scrambles that are known to have short solutions, or just short scrambles. If you input a short scramble, the output may be the scramble in reverse, but I assure you the solver has no knowledge of the moves applied to the starting cube.
+As of **2026**, I have revived this repository to refine the codebase, fix original submission issues, and optimize the performance. This revival is an independent project undertaken solely by myself (Jack Manuel), without the involvement of the original teammates.
 
-solutions up to 14 moves are solved virtually instantly, and 16 move solutions can usually be solved in a matter of minutes. 
+---
 
-There is no built in timing, so run with Linux "time" command to get timing.
+## Technical Overview
+
+The solver guarantees an optimal solution by utilizing **Iterative Deepening A\* (IDA\*)** search. To effectively prune the massive search space of 43 quintillion permutations, it relies on several precomputed **Pattern Databases (PDBs)**.
+
+### Heuristics & Databases
+- **Corners PDB**: Indexes 8 corner cubies (88,179,840 states).
+- **Edge Groups 1 & 2**: Two disjoint databases each covering 7 edges (~511M states each).
+- **Edge Orientation**: A smaller database tracking the orientation of all 12 edges (2,048 states).
+
+The solver calculates the maximum distance from all available PDBs to provide a strong, admissible heuristic for the search algorithm.
+
+---
+
+## How to Run (Linux Only)
+
+This project is built for Linux environments and requires `g++` and `make`.
+
+### 1. Build the Project
+Compile the `solver` executable using the provided Makefile:
+```bash
+make
+```
+
+### 2. Generate Pattern Databases
+The solver requires several PDB files to function effectively. These total approximately **1GB** on disk. 
+
+**Generation Warning:** Building the edge databases is a heavy operation. It can take **3+ hours** for each edge database. 
+
+You can build all required databases with:
+```bash
+./solver --build all
+```
+Or target specific databases individually:
+- `./solver --build corners`
+- `./solver --build edge1`
+- `./solver --build edge2`
+- `./solver --build orient`
+
+### 3. Solve a Scramble
+Run the solver by passing a scramble string in standard Rubik's notation:
+```bash
+./solver "D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'"
+```
+
+---
+
+## Performance Expectation
+
+Search time scales exponentially with the complexity of the scramble:
+
+| Solution Length | Typical Solve Time |
+| :--- | :--- |
+| **0 - 14 Moves** | Virtually Instant |
+| **15 - 16 Moves** | Minutes |
+| **17 - 18 Moves** | Hours |
+
+---
+
+## Documentation
+For a deep dive into the mathematical implementation and Lehmer indexing, see the [report](Korf_IDA_PDB_Report.pdf) included in this repository. The report was submitted as part of the original group project, and was contributed to by all three original members.

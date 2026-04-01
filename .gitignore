@@ -2,6 +2,7 @@
 build/
 *.o
 solver
+solver.exe
 
 # Editor files
 *~
