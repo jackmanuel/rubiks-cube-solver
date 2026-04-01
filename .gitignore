@@ -13,3 +13,6 @@ solver.exe
 # Data and Documentation
 databases/
 parallelization_analysis.md
+
+# Benchmark data
+benchmark/baseline.json

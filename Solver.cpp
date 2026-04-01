@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #include "Solver.h"
 #include "Cube.h"
@@ -65,22 +66,24 @@ bool Solver::dfs(
     long long& statesChecked,
     const PDB& pdb)
 {
-    // Reconstruct combined PDB indices for heuristic lookup
-    uint32_t cIdx  = (uint32_t)cPerm * 2187 + cOrient;
+    // Heuristic Lookup: Edge databases are checked first as they are more likely to prune.
     uint32_t e1Idx = (uint32_t)ePerm1 * 128 + eOrient1;
-    uint32_t e2Idx = (uint32_t)ePerm2 * 128 + eOrient2;
-
-    // Heuristic: max of all PDB values
-    uint8_t h = pdb.getCornerDB()[cIdx];
-    uint8_t h1 = pdb.getEdge1DB()[e1Idx];
-    uint8_t h2 = pdb.getEdge2DB()[e2Idx];
-    uint8_t h3 = pdb.getOrientDB()[orient];
-    if (h1 > h) h = h1;
-    if (h2 > h) h = h2;
-    if (h3 > h) h = h3;
-
-    // Prune: estimated total cost exceeds bound
+    uint8_t h = pdb.getEdge1DB()[e1Idx];
     if (depth + h > maxDepth) return false;
+
+    uint32_t e2Idx = (uint32_t)ePerm2 * 128 + eOrient2;
+    uint8_t h2 = pdb.getEdge2DB()[e2Idx];
+    if (depth + h2 > maxDepth) return false;
+    if (h2 > h) h = h2;
+
+    uint32_t cIdx  = (uint32_t)cPerm * 2187 + cOrient;
+    uint8_t hCorner = pdb.getCornerDB()[cIdx];
+    if (depth + hCorner > maxDepth) return false;
+    if (hCorner > h) h = hCorner;
+
+    uint8_t hOrient = pdb.getOrientDB()[orient];
+    if (depth + hOrient > maxDepth) return false;
+    if (hOrient > h) h = hOrient;
 
     statesChecked++;
     if ((statesChecked & 0xFFFFF) == 0)
@@ -133,18 +136,18 @@ std::string Solver::solve(Cube cube)
     uint8_t  eOrient2 = (uint8_t)indexer.getEdgeOrientRank2FromCube(cube);
     uint16_t orient   = indexer.getEdgeOrientRankCube(cube);
 
-    // Compute initial heuristic for starting depth
-    uint32_t cIdx  = (uint32_t)cPerm * 2187 + cOrient;
     uint32_t e1Idx = (uint32_t)ePerm1 * 128 + eOrient1;
     uint32_t e2Idx = (uint32_t)ePerm2 * 128 + eOrient2;
+    uint32_t cIdx  = (uint32_t)cPerm * 2187 + cOrient;
 
-    uint8_t h = pdb.getCornerDB()[cIdx];
-    uint8_t h1 = pdb.getEdge1DB()[e1Idx];
+    uint8_t h = pdb.getEdge1DB()[e1Idx];
     uint8_t h2 = pdb.getEdge2DB()[e2Idx];
-    uint8_t h3 = pdb.getOrientDB()[orient];
-    if (h1 > h) h = h1;
+    uint8_t hCorner = pdb.getCornerDB()[cIdx];
+    uint8_t hOrient = pdb.getOrientDB()[orient];
+
     if (h2 > h) h = h2;
-    if (h3 > h) h = h3;
+    if (hCorner > h) h = hCorner;
+    if (hOrient > h) h = hOrient;
 
     int maxDepth = (int)h;
 
@@ -159,6 +162,9 @@ std::string Solver::solve(Cube cube)
 
     int solution[MAX_MOVES];
     long long statesChecked = 0;
+    long long totalStatesChecked = 0;
+
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     // IDA* loop: iteratively deepen until solution found
     while (maxDepth <= MAX_MOVES)
@@ -170,15 +176,34 @@ std::string Solver::solve(Cube cube)
         if (dfs(cPerm, cOrient, ePerm1, eOrient1, ePerm2, eOrient2, orient,
                 0, maxDepth, -1, solution, statesChecked, pdb))
         {
-            std::cout << std::endl << "SOLUTION FOUND! (" << formatNumber(statesChecked) << " states checked)" << std::endl;
+            totalStatesChecked += statesChecked;
+            auto endTime = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = endTime - startTime;
+            double seconds = elapsed.count();
+            double statesPerSec = (seconds > 0.0) ? (totalStatesChecked / seconds) : 0.0;
+
+            std::cout << std::endl << "SOLUTION FOUND!" << std::endl;
+            std::cout << "Total states: " << formatNumber(totalStatesChecked) << std::endl;
+            std::cout << "Search time:  " << seconds << " seconds" << std::endl;
+            std::cout << "Speed:        " << formatNumber(static_cast<long long>(statesPerSec)) << " states/sec" << std::endl;
+
             return movesToString(solution, maxDepth);
         }
 
+        totalStatesChecked += statesChecked;
         std::cout << "\rsearching depth " << maxDepth << "... done (" << formatNumber(statesChecked) << " states checked)      " << std::flush;
         maxDepth++;
     }
 
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = endTime - startTime;
+    double seconds = elapsed.count();
+    double statesPerSec = (seconds > 0.0) ? (totalStatesChecked / seconds) : 0.0;
+
     std::cout << std::endl << "No solution found within " << MAX_MOVES << " moves." << std::endl;
+    std::cout << "Total states: " << formatNumber(totalStatesChecked) << std::endl;
+    std::cout << "Search time:  " << seconds << " seconds" << std::endl;
+    std::cout << "Speed:        " << formatNumber(static_cast<long long>(statesPerSec)) << " states/sec" << std::endl;
     return "";
 }
 
