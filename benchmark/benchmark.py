@@ -148,11 +148,11 @@ def main():
         name = args.save_baseline
         baselines = {}
         if os.path.exists(baseline_path):
-            with open(baseline_path, "r") as f:
-                try:
+            try:
+                with open(baseline_path, "r") as f:
                     baselines = json.load(f)
-                except json.JSONDecodeError:
-                    pass
+            except json.JSONDecodeError:
+                pass
         
         baselines[name] = run_summary
         with open(baseline_path, "w") as f:
@@ -160,10 +160,17 @@ def main():
         print(f"\nBaseline '{name}' saved to {baseline_path}")
     else:
         if os.path.exists(baseline_path):
-            with open(baseline_path, "r") as f:
-                baselines = json.load(f)
+            try:
+                with open(baseline_path, "r") as f:
+                    baselines = json.load(f)
+            except json.JSONDecodeError:
+                print(f"Error: Could not parse {baseline_path}")
+                return
             
             for name, baseline in baselines.items():
+                if not isinstance(baseline, dict):
+                    continue
+                    
                 print(f"\nCOMPARISON WITH BASELINE: {name}")
                 print("-" * 50)
                 print(f"Metric         | Baseline   | Current          | Change")
