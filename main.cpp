@@ -40,36 +40,41 @@ static void generateDatabases(const std::vector<std::string>& missing)
     // Create the Databases directory if it doesn't exist
     MKDIR(DB_DIR.c_str());
 
+    size_t total = missing.size();
+    size_t current = 1;
+
     for (const std::string& db : missing)
     {
         if (db == CORNER_DB)
         {
-            std::cout << "\n[1/4] Generating corner pattern database..." << std::endl;
-            std::cout << "       (this is the smallest, ~88M entries)" << std::endl;
+            std::cout << "\n[" << current << "/" << total << "] Generating corner pattern database..." << std::endl;
+            std::cout << "(this is the smallest, ~88M entries)" << std::endl;
             PDBBuilder::buildCorners();
-            std::cout << "       Done!" << std::endl;
+            std::cout << "Done!" << std::endl;
         }
         else if (db == EDGE1_DB)
         {
-            std::cout << "\n[2/4] Generating edge group 1 pattern database..." << std::endl;
-            std::cout << "       (this is large, ~511M entries — may take a long time)" << std::endl;
+            std::cout << "\n[" << current << "/" << total << "] Generating edge group 1 pattern database..." << std::endl;
+            std::cout << "(This is large at ~511M entries. It may take 3+ hours)" << std::endl;
             PDBBuilder::buildEdges1();
-            std::cout << "       Done!" << std::endl;
+            std::cout << "Done!" << std::endl;
         }
         else if (db == EDGE2_DB)
         {
-            std::cout << "\n[3/4] Generating edge group 2 pattern database..." << std::endl;
-            std::cout << "       (this is large, ~511M entries — may take a long time)" << std::endl;
+            std::cout << "\n[" << current << "/" << total << "] Generating edge group 2 pattern database..." << std::endl;
+            std::cout << "(This is large at ~511M entries. It may take 3+ hours)" << std::endl;
             PDBBuilder::buildEdges2();
-            std::cout << "       Done!" << std::endl;
+            std::cout << "Done!" << std::endl;
         }
         else if (db == ORIENT_DB)
         {
-            std::cout << "\n[4/4] Generating edge orientation pattern database..." << std::endl;
-            std::cout << "       (this is the smallest, 2048 entries — very fast)" << std::endl;
+            std::cout << "\n[" << current << "/" << total << "] Generating edge orientation pattern database..." << std::endl;
+            std::cout << "(this is the smallest, 2048 entries — very fast)" << std::endl;
             PDBBuilder::buildEdgeOrient();
-            std::cout << "       Done!" << std::endl;
+            std::cout << "Done!" << std::endl;
         }
+        
+        current++;
     }
 }
 
@@ -143,7 +148,7 @@ int main(int argc, char const *argv[])
         }
         std::cerr << std::endl;
         std::cerr << "These databases can be generated automatically, but be aware:" << std::endl;
-        std::cerr << "  * The edge databases (~511M entries each) may take HOURS to generate." << std::endl;
+        std::cerr << "  * The edge databases (~511M entries each) may take 3+ HOURS to generate." << std::endl;
         std::cerr << "  * Generation requires significant memory (1GB+)." << std::endl;
         std::cerr << "  * The total database size on disk is ~1GB." << std::endl;
         std::cerr << std::endl;
