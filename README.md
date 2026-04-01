@@ -86,3 +86,11 @@ Search time scales exponentially with the complexity of the scramble:
 
 ## Documentation
 For a deep dive into the mathematical implementation and Lehmer indexing, see the [report](Korf_IDA_PDB_Report.pdf) included in this repository. The report was submitted as part of the original group project, and was contributed to by all three original members.
+
+---
+
+## References
+
+- **Korf, R. E. (1997).** [Finding Optimal Solutions to Rubik's Cube Using Pattern Databases](https://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf). *AAAI-1997*.
+- **Korf, R. E., & Felner, A. (2002).** [Disjoint pattern database heuristics](https://doi.org/10.1016/S0004-3702(01)00092-3). *Artificial Intelligence*, 134(1-2), 9–22.
+- **Botto, B. (2020).** [Implementing an Optimal Rubik’s Cube Solver using Korf’s Algorithm](https://medium.com/@benjamin.botto/implementing-an-optimal-rubiks-cube-solver-using-korf-s-algorithm-bf750b332cf9). *Medium*.
