@@ -25,22 +25,34 @@ std::string Solver::solve(Cube cube)
     int maxDepth = PDB.getMoveCountLowerBound(cube);
 
     std::cout << "Starting the search at depth " << maxDepth << std::endl;
+    std::cout << "Searching depth " << maxDepth << "..." << std::flush;
 
     open.push(cube);
+    long long statesChecked = 0;
 
     while (true)
     {
         if (open.empty())
         {
             // didn't find a solution at that depth
-            std::cout << "\rSearching depth " << maxDepth + 1 << "..." << std::flush;
+            maxDepth++;
+            statesChecked = 0;
+            
+            // Pad with spaces to overwrite the progress from the previous depth
+            std::cout << "\rSearching depth " << maxDepth << "...                                                           " << std::flush;
 
             open.push(startingCube);
-            maxDepth++;
         }
         
         Cube current = open.top();
         open.pop();
+        statesChecked++;
+
+        // 0x7FFFF is 524,287 in decimal
+        if ((statesChecked & 0x7FFFF) == 0)
+        {
+            std::cout << "\rSearching depth " << maxDepth << "... (States checked: " << statesChecked << ", Queue size: " << open.size() << ")" << std::flush;
+        }
         
 
         if (current.isSolved())
