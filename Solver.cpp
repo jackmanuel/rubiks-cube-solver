@@ -33,8 +33,7 @@ std::string Solver::solve(Cube cube)
         if (open.empty())
         {
             // didn't find a solution at that depth
-            std::cout << "NOW SEARCHING  " << maxDepth + 1 << std::endl;
-            std::cout << "\n" << std::endl;
+            std::cout << "\rSearching depth " << maxDepth + 1 << "..." << std::flush;
 
             open.push(startingCube);
             maxDepth++;
@@ -46,8 +45,15 @@ std::string Solver::solve(Cube cube)
 
         if (current.isSolved())
         {
-            movesApplied[current.getDepth() - 1] = current.getLastMove();
-            std::cout << "SOLUTION FOUND!" << std::endl;
+            if (current.getDepth() > 0)
+            {
+                movesApplied[current.getDepth() - 1] = current.getLastMove();
+                std::cout << std::endl << "SOLUTION FOUND!" << std::endl;
+            }
+            else
+            {
+                std::cout << "The cube is already solved!" << std::endl;
+            }
             break;
         }
 

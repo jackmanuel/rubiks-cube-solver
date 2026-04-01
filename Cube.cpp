@@ -685,85 +685,34 @@ bool Cube::isEdgeSolved(void)
 
 void Cube::applyMoves(std::string moveList)
 {
-
     std::istringstream iss(moveList);
-    std::vector<std::string> tokens{std::istream_iterator<std::string>{iss}, 
+    std::vector<std::string> tokens{std::istream_iterator<std::string>{iss},
                                     std::istream_iterator<std::string>{}};
 
-    for (std::string move : tokens)
+    for (const std::string& moveStr : tokens)
     {
-        if (move.compare("F") == 0)
+        if (moveStr == "F")      f();
+        else if (moveStr == "F'") fPrime();
+        else if (moveStr == "F2") f2();
+        else if (moveStr == "U")  u();
+        else if (moveStr == "U'") uPrime();
+        else if (moveStr == "U2") u2();
+        else if (moveStr == "D")  d();
+        else if (moveStr == "D'") dPrime();
+        else if (moveStr == "D2") d2();
+        else if (moveStr == "R")  r();
+        else if (moveStr == "R'") rPrime();
+        else if (moveStr == "R2") r2();
+        else if (moveStr == "L")  l();
+        else if (moveStr == "L'") lPrime();
+        else if (moveStr == "L2") l2();
+        else if (moveStr == "B")  b();
+        else if (moveStr == "B'") bPrime();
+        else if (moveStr == "B2") b2();
+        else
         {
-            f();
+            throw std::runtime_error("Invalid move encountered in scramble: \"" + moveStr + "\"");
         }
-        if (move.compare("F'") == 0)
-        {
-            fPrime();
-        }
-        if (move.compare("F2") == 0)
-        {
-            f2();
-        }
-        if (move.compare("U") == 0)
-        {
-            u();
-        }
-        if (move.compare("U'") == 0)
-        {
-            uPrime();
-        }
-        if (move.compare("U2") == 0)
-        {
-            u2();
-        }
-        if (move.compare("D") == 0)
-        {
-            d();
-        }
-        if (move.compare("D'") == 0)
-        {
-            dPrime();
-        }
-        if (move.compare("D2") == 0)
-        {
-            d2();
-        }
-        if (move.compare("R") == 0)
-        {
-            r();
-        }
-        if (move.compare("R'") == 0)
-        {
-            rPrime();
-        }
-        if (move.compare("R2") == 0)
-        {
-            r2();
-        }
-        if (move.compare("L") == 0)
-        {
-            l();
-        }
-        if (move.compare("L'") == 0)
-        {
-            lPrime();
-        }
-        if (move.compare("L2") == 0)
-        {
-            l2();
-        }
-        if (move.compare("B") == 0)
-        {
-            b();
-        }
-        if (move.compare("B'") == 0)
-        {
-            bPrime();
-        }
-        if (move.compare("B2") == 0)
-        {
-            b2();
-        } 
     }
 
     this->lastMove = NONE;

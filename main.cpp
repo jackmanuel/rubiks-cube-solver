@@ -187,7 +187,7 @@ int main(int argc, char const *argv[])
 
     try
     {
-        std::cout << "begin!" << std::endl;
+        std::cout << "Starting program." << std::endl;
 
         Cube cube;
 
@@ -195,9 +195,12 @@ int main(int argc, char const *argv[])
 
         std::string solution = Solver::solve(cube);
 
-        std::cout << "scramble: " << argv[1] << std::endl;
-        std::cout << solution << std::endl;
-        std::cout << "end!" << std::endl;
+        std::cout << "Scramble: " << argv[1] << std::endl;
+        if (!solution.empty())
+        {
+            std::cout << "Solution: " << solution << std::endl;
+        }
+        std::cout << "Exiting program." << std::endl;
     }
     catch (const std::runtime_error& e)
     {
