@@ -5,8 +5,6 @@
 
 #include "Cube.h"
 
-
-
 class Indexer
 {
     

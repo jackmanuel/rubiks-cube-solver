@@ -15,13 +15,9 @@
 #include "Cube.h"
 #include "PDBBuilder.h"
 #include "Solver.h"
+#include "DatabaseConstants.h"
 
-// Database file paths (must match the paths used in Solver.cpp)
-static const std::string DB_DIR = "databases";
-static const std::string CORNER_DB   = DB_DIR + "/cornerDB new.data";
-static const std::string EDGE1_DB    = DB_DIR + "/edge1DB.data";
-static const std::string EDGE2_DB    = DB_DIR + "/edge2DB.data";
-static const std::string ORIENT_DB   = DB_DIR + "/edgeOrientDB safe.data";
+using namespace DatabaseConstants;
 
 static bool fileExists(const std::string& filename)
 {

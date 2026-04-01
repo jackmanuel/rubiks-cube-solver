@@ -9,6 +9,7 @@
 #include "Cube.h"
 #include "Indexer.h"
 #include "ProgressBar.h"
+#include "DatabaseConstants.h"
 
 PDBBuilder::PDBBuilder()
 {
@@ -69,7 +70,7 @@ void PDBBuilder::buildCorners(void)
 
     progress.finish();
 
-    std::ofstream writer("databases/cornerDB.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer(DatabaseConstants::CORNER_DB, std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_CORNER_RANKS);
     writer.close();
 
@@ -106,7 +107,7 @@ void PDBBuilder::buildEdges1(void)
     (*database)[indexer.getEdgeIndex1(cube)] = 0;
 
 
-    std::ofstream writer("databases/edge1DB.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer(DatabaseConstants::EDGE1_DB, std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_RANKS);
     writer.close();
 
@@ -142,7 +143,7 @@ void PDBBuilder::buildEdges2(void)
     Cube cube;
     (*database)[indexer.getEdgeIndex2(cube)] = 0;
 
-    std::ofstream writer("databases/edge2DB.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer(DatabaseConstants::EDGE2_DB, std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_RANKS);
     writer.close();
 
@@ -318,7 +319,7 @@ void PDBBuilder::buildEdgeOrient(void)
 
     progress.finish();
 
-    std::ofstream writer("databases/edgeOrientDB.data", std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream writer(DatabaseConstants::ORIENT_DB, std::ios::out | std::ios::binary | std::ios::trunc);
     writer.write((char*)database, sizeof(uint8_t) * NUM_EDGE_ORIENTATIONS);
     writer.close();
 

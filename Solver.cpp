@@ -5,6 +5,7 @@
 #include "Solver.h"
 #include "Cube.h"
 #include "PDB.h"
+#include "DatabaseConstants.h"
 
 Solver::Solver(void)
 {
@@ -12,8 +13,8 @@ Solver::Solver(void)
 
 std::string Solver::solve(Cube cube)
 {
-    PDB PDB("databases/cornerDB.data", "databases/edge1DB.data", 
-            "databases/edge2DB.data", "databases/edgeOrientDB.data");
+    PDB PDB(DatabaseConstants::CORNER_DB, DatabaseConstants::EDGE1_DB, 
+            DatabaseConstants::EDGE2_DB, DatabaseConstants::ORIENT_DB);
 
     Cube startingCube = cube;
     std::stack<Cube> open;
