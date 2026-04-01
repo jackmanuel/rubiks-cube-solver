@@ -5,3 +5,7 @@ solver
 
 # Editor files
 *~
+
+# Data and Documentation
+databases/
+parallelization_analysis.md
