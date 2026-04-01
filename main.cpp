@@ -78,8 +78,51 @@ int main(int argc, char const *argv[])
     if (argc < 2)
     {
         std::cerr << "Usage: ./solver \"<scramble>\"" << std::endl;
+        std::cerr << "       ./solver --build <corners|edge1|edge2|orient|all>" << std::endl;
         std::cerr << "Example: ./solver \"D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'\"" << std::endl;
         return 1;
+    }
+
+    if (std::string(argv[1]) == "--build")
+    {
+        if (argc < 3)
+        {
+            std::cerr << "Error: Target required for --build." << std::endl;
+            std::cerr << "Usage: ./solver --build <corners|edge1|edge2|orient|all>" << std::endl;
+            return 1;
+        }
+
+        std::string target = argv[2];
+        std::vector<std::string> toBuild;
+        
+        if (target == "corners")     toBuild.push_back(CORNER_DB);
+        else if (target == "edge1")  toBuild.push_back(EDGE1_DB);
+        else if (target == "edge2")  toBuild.push_back(EDGE2_DB);
+        else if (target == "orient") toBuild.push_back(ORIENT_DB);
+        else if (target == "all") 
+        {
+            toBuild.push_back(CORNER_DB);
+            toBuild.push_back(EDGE1_DB);
+            toBuild.push_back(EDGE2_DB);
+            toBuild.push_back(ORIENT_DB);
+        }
+        else
+        {
+            std::cerr << "Invalid build target. Options: corners, edge1, edge2, orient, all" << std::endl;
+            return 1;
+        }
+
+        try
+        {
+            generateDatabases(toBuild);
+            std::cout << "\nSuccessfully built target: " << target << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "\nError during database generation: " << e.what() << std::endl;
+            return 1;
+        }
+        return 0;
     }
 
     // Check for missing pattern databases before doing anything
