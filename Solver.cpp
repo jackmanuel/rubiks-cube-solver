@@ -33,28 +33,34 @@ Solver::Solver(void)
 {
 }
 
-bool Solver::shouldPrune(int move, int lastMove)
-{
-    if (lastMove < 0) return false;
-
-    int face = move / 3;
-    int lastFace = lastMove / 3;
-
-    // Same face: always prune (e.g. R after R')
-    if (face == lastFace) return true;
-
-    // Opposite faces: prune one ordering to avoid duplicates.
-    // Face pairs: R(0)↔L(5), U(1)↔D(3), F(2)↔B(4)
-    // Convention: if opposite face, only allow the lower-numbered face first.
-    bool opposite = false;
-    if ((face == 0 && lastFace == 5) || (face == 5 && lastFace == 0)) opposite = true;
-    if ((face == 1 && lastFace == 3) || (face == 3 && lastFace == 1)) opposite = true;
-    if ((face == 2 && lastFace == 4) || (face == 4 && lastFace == 2)) opposite = true;
-
-    if (opposite && lastFace > face) return true;
-
-    return false;
-}
+const Solver::MoveList Solver::MoveTable[19] = {
+    // lastMove = -1 (all moves allowed)
+    { 18, { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 } },
+    // lastMove = 0, 1, 2 (R) -> prune R (0,1,2). keep U,F,D,B,L
+    { 15, { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    { 15, { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    { 15, { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    // lastMove = 3, 4, 5 (U) -> prune U (3,4,5). keep R,F,D,B,L
+    { 15, { 0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    { 15, { 0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    { 15, { 0, 1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    // lastMove = 6, 7, 8 (F) -> prune F (6,7,8). keep R,U,D,B,L
+    { 15, { 0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    { 15, { 0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    { 15, { 0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 0, 0 } },
+    // lastMove = 9, 10, 11 (D) -> prune D (9,10,11) and U (3,4,5). keep R,F,B,L
+    { 12, { 0, 1, 2, 6, 7, 8, 12, 13, 14, 15, 16, 17, 0, 0, 0, 0, 0, 0 } },
+    { 12, { 0, 1, 2, 6, 7, 8, 12, 13, 14, 15, 16, 17, 0, 0, 0, 0, 0, 0 } },
+    { 12, { 0, 1, 2, 6, 7, 8, 12, 13, 14, 15, 16, 17, 0, 0, 0, 0, 0, 0 } },
+    // lastMove = 12, 13, 14 (B) -> prune B (12,13,14) and F (6,7,8). keep R,U,D,L
+    { 12, { 0, 1, 2, 3, 4, 5, 9, 10, 11, 15, 16, 17, 0, 0, 0, 0, 0, 0 } },
+    { 12, { 0, 1, 2, 3, 4, 5, 9, 10, 11, 15, 16, 17, 0, 0, 0, 0, 0, 0 } },
+    { 12, { 0, 1, 2, 3, 4, 5, 9, 10, 11, 15, 16, 17, 0, 0, 0, 0, 0, 0 } },
+    // lastMove = 15, 16, 17 (L) -> prune L (15,16,17) and R (0,1,2). keep U,F,D,B
+    { 12, { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0, 0, 0, 0, 0, 0 } },
+    { 12, { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0, 0, 0, 0, 0, 0 } },
+    { 12, { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0, 0, 0, 0, 0, 0 } }
+};
 
 bool Solver::dfs(
     uint16_t cPerm, uint16_t cOrient,
@@ -95,10 +101,12 @@ bool Solver::dfs(
     // This works because the pattern databases collectively cover all 20 movable pieces.
     if (h == 0) return true;
 
-    // Try all 18 moves
-    for (int move = 0; move < NUM_MOVES; move++)
+    const MoveList& nextMoves = MoveTable[lastMove + 1];
+
+    // Try all allowed next moves
+    for (int i = 0; i < nextMoves.numMoves; i++)
     {
-        if (shouldPrune(move, lastMove)) continue;
+        int move = nextMoves.allowed[i];
 
         solution[depth] = move;
 

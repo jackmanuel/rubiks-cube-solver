@@ -34,8 +34,12 @@ class Solver
             long long& statesChecked,
             const PDB& pdb);
 
-        // Move pruning: skip redundant move sequences
-        static bool shouldPrune(int move, int lastMove);
+        // Precomputed allowed moves table to reduce branching in hot loop
+        struct MoveList {
+            int numMoves;
+            int allowed[NUM_MOVES];
+        };
+        static const MoveList MoveTable[NUM_MOVES + 1];
 
         // Convert solution (array of move indices) to string
         static std::string movesToString(int* solution, int length);
