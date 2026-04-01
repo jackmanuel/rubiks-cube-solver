@@ -5,6 +5,18 @@
 
 #include "PDB.h"
 
+// Removed CubeState. State is now bitpacked into 3 uint32_t registers to 
+// hit the exact 6-argument limit of x64 SysV calling convention.
+
+struct SearchContext {
+    const uint8_t* edge1DB;
+    const uint8_t* edge2DB;
+    const uint8_t* cornerDB;
+    int* solution;
+    long long statesChecked;
+    int maxDepth;
+};
+
 class Solver
 {
     public:
@@ -24,15 +36,8 @@ class Solver
         Solver(void);
 
         // Recursive IDA* DFS on decomposed coordinates
-        static bool dfs(
-            uint16_t cPerm, uint16_t cOrient,
-            uint32_t ePerm1, uint8_t eOrient1,
-            uint32_t ePerm2, uint8_t eOrient2,
-            uint16_t orient,
-            int depth, int maxDepth, int lastMove,
-            int* solution,
-            long long& statesChecked,
-            const PDB& pdb);
+        static bool dfs(uint32_t e1Idx, uint32_t e2Idx, uint32_t cState, 
+                        int distance, int lastMove, SearchContext& ctx);
 
         // Precomputed allowed moves table to reduce branching in hot loop
         struct MoveList {

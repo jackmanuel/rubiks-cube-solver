@@ -63,38 +63,35 @@ const Solver::MoveList Solver::MoveTable[19] = {
 };
 
 bool Solver::dfs(
-    uint16_t cPerm, uint16_t cOrient,
-    uint32_t ePerm1, uint8_t eOrient1,
-    uint32_t ePerm2, uint8_t eOrient2,
-    uint16_t orient,
-    int depth, int maxDepth, int lastMove,
-    int* solution,
-    long long& statesChecked,
-    const PDB& pdb)
+    uint32_t e1Idx, uint32_t e2Idx, uint32_t cState,
+    int distance, int lastMove,
+    SearchContext& ctx)
 {
-    // Heuristic Lookup: Edge databases are checked first as they are more likely to prune.
-    uint32_t e1Idx = (uint32_t)ePerm1 * 128 + eOrient1;
-    uint8_t h = pdb.getEdge1DB()[e1Idx];
-    if (depth + h > maxDepth) return false;
+    // Extract properties instantly via registers
+    uint32_t ePerm1 = e1Idx >> 7;
+    uint8_t eOrient1 = e1Idx & 0x7F;
+    uint32_t ePerm2 = e2Idx >> 7;
+    uint8_t eOrient2 = e2Idx & 0x7F;
+    uint16_t cPerm = cState >> 16;
+    uint16_t cOrient = cState & 0xFFFF;
 
-    uint32_t e2Idx = (uint32_t)ePerm2 * 128 + eOrient2;
-    uint8_t h2 = pdb.getEdge2DB()[e2Idx];
-    if (depth + h2 > maxDepth) return false;
+    // Heuristic Lookup: Edge databases are checked first as they are more likely to prune.
+    uint8_t h = ctx.edge1DB[e1Idx];
+    if (h > distance) return false;
+
+    uint8_t h2 = ctx.edge2DB[e2Idx];
+    if (h2 > distance) return false;
     if (h2 > h) h = h2;
 
     uint32_t cIdx  = (uint32_t)cPerm * 2187 + cOrient;
-    uint8_t hCorner = pdb.getCornerDB()[cIdx];
-    if (depth + hCorner > maxDepth) return false;
+    uint8_t hCorner = ctx.cornerDB[cIdx];
+    if (hCorner > distance) return false;
     if (hCorner > h) h = hCorner;
 
-    uint8_t hOrient = pdb.getOrientDB()[orient];
-    if (depth + hOrient > maxDepth) return false;
-    if (hOrient > h) h = hOrient;
-
-    statesChecked++;
-    if ((statesChecked & 0xFFFFF) == 0)
+    ctx.statesChecked++;
+    if ((ctx.statesChecked & 0xFFFFF) == 0)
     {
-        std::cout << "\rsearching depth " << maxDepth << "... (" << formatNumber(statesChecked) << " states checked)      " << std::flush;
+        std::cout << "\rsearching depth " << ctx.maxDepth << "... (" << formatNumber(ctx.statesChecked) << " states checked)      " << std::flush;
     }
 
     // Goal test: heuristic is 0 if and only if the cube is solved.
@@ -102,24 +99,23 @@ bool Solver::dfs(
     if (h == 0) return true;
 
     const MoveList& nextMoves = MoveTable[lastMove + 1];
+    int currentDepth = ctx.maxDepth - distance;
 
     // Try all allowed next moves
     for (int i = 0; i < nextMoves.numMoves; i++)
     {
         int move = nextMoves.allowed[i];
 
-        solution[depth] = move;
+        ctx.solution[currentDepth] = move;
 
-        if (dfs(
-            TransitionTable::cornerPerm[cPerm][move],
-            TransitionTable::cornerOrient[cOrient][move],
-            TransitionTable::edgePerm[ePerm1][move],
-            eOrient1 ^ TransitionTable::edgeFlipMask[ePerm1][move],
-            TransitionTable::edgePerm[ePerm2][move],
-            eOrient2 ^ TransitionTable::edgeFlipMask[ePerm2][move],
-            TransitionTable::fullOrient[orient][move],
-            depth + 1, maxDepth, move,
-            solution, statesChecked, pdb))
+        uint32_t nextE1Idx = (TransitionTable::edgePerm[ePerm1][move] << 7) |
+                             (eOrient1 ^ TransitionTable::edgeFlipMask[ePerm1][move]);
+        uint32_t nextE2Idx = (TransitionTable::edgePerm[ePerm2][move] << 7) |
+                             (eOrient2 ^ TransitionTable::edgeFlipMask[ePerm2][move]);
+        uint32_t nextCState = ((uint32_t)TransitionTable::cornerPerm[cPerm][move] << 16) |
+                               TransitionTable::cornerOrient[cOrient][move];
+
+        if (dfs(nextE1Idx, nextE2Idx, nextCState, distance - 1, move, ctx))
         {
             return true;
         }
@@ -142,20 +138,18 @@ std::string Solver::solve(Cube cube)
     uint8_t  eOrient1 = (uint8_t)indexer.getEdgeOrientRank1FromCube(cube);
     uint32_t ePerm2   = (uint32_t)indexer.getEdgePermRank2FromCube(cube);
     uint8_t  eOrient2 = (uint8_t)indexer.getEdgeOrientRank2FromCube(cube);
-    uint16_t orient   = indexer.getEdgeOrientRankCube(cube);
 
-    uint32_t e1Idx = (uint32_t)ePerm1 * 128 + eOrient1;
-    uint32_t e2Idx = (uint32_t)ePerm2 * 128 + eOrient2;
-    uint32_t cIdx  = (uint32_t)cPerm * 2187 + cOrient;
+    uint32_t e1Idx = (ePerm1 << 7) | eOrient1;
+    uint32_t e2Idx = (ePerm2 << 7) | eOrient2;
+    uint32_t cState = ((uint32_t)cPerm << 16) | cOrient;
+    uint32_t cIdx = cPerm * 2187 + cOrient;
 
     uint8_t h = pdb.getEdge1DB()[e1Idx];
     uint8_t h2 = pdb.getEdge2DB()[e2Idx];
     uint8_t hCorner = pdb.getCornerDB()[cIdx];
-    uint8_t hOrient = pdb.getOrientDB()[orient];
 
     if (h2 > h) h = h2;
     if (hCorner > h) h = hCorner;
-    if (hOrient > h) h = hOrient;
 
     int maxDepth = (int)h;
 
@@ -169,8 +163,13 @@ std::string Solver::solve(Cube cube)
     std::cout << "Starting the search at depth " << maxDepth << std::endl;
 
     int solution[MAX_MOVES];
-    long long statesChecked = 0;
     long long totalStatesChecked = 0;
+
+    SearchContext ctx;
+    ctx.edge1DB = pdb.getEdge1DB().data();
+    ctx.edge2DB = pdb.getEdge2DB().data();
+    ctx.cornerDB = pdb.getCornerDB().data();
+    ctx.solution = solution;
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -179,12 +178,12 @@ std::string Solver::solve(Cube cube)
     {
         std::cout << "\rsearching depth " << maxDepth << "... (" << formatNumber(0) << " states checked)      " << std::flush;
 
-        statesChecked = 0;
+        ctx.statesChecked = 0;
+        ctx.maxDepth = maxDepth;
 
-        if (dfs(cPerm, cOrient, ePerm1, eOrient1, ePerm2, eOrient2, orient,
-                0, maxDepth, -1, solution, statesChecked, pdb))
+        if (dfs(e1Idx, e2Idx, cState, maxDepth, -1, ctx))
         {
-            totalStatesChecked += statesChecked;
+            totalStatesChecked += ctx.statesChecked;
             auto endTime = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = endTime - startTime;
             double seconds = elapsed.count();
@@ -198,8 +197,8 @@ std::string Solver::solve(Cube cube)
             return movesToString(solution, maxDepth);
         }
 
-        totalStatesChecked += statesChecked;
-        std::cout << "\rsearching depth " << maxDepth << "... done (" << formatNumber(statesChecked) << " states checked)      " << std::flush;
+        totalStatesChecked += ctx.statesChecked;
+        std::cout << "\rsearching depth " << maxDepth << "... done (" << formatNumber(ctx.statesChecked) << " states checked)      " << std::flush;
         maxDepth++;
     }
 
