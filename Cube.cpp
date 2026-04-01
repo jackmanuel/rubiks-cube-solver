@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
-#include <algorithm>
 #include <iterator>
 #include <vector>
 
@@ -770,6 +769,5 @@ void Cube::applyMoves(std::string moveList)
     this->lastMove = NONE;
     this->depth = 0;
 }
-
 
 

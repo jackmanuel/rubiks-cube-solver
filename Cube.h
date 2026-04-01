@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <array>
+#include <string>
 #include <vector>
 
 class Cube

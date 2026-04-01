@@ -1,7 +1,6 @@
 #include <bitset>
 #include <array>
 #include <cstdio>
-#include <cmath>
 
 #include "Indexer.h"
 #include "Cube.h"
@@ -213,7 +212,8 @@ int Indexer::permutations(int n, int k)
 }
 
 
-int Indexer::fac(int n){
+int Indexer::fac(int n)
+{
     if (n == 0 || n == 1) { return 1; }
     else return n * fac(n - 1);
 }

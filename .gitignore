@@ -5,6 +5,9 @@ solver
 
 # Editor files
 *~
+.clang-format
+.vscode
+
 
 # Data and Documentation
 databases/
