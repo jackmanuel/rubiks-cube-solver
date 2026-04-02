@@ -12,7 +12,8 @@ solver.exe
 
 # Data and Documentation
 databases/
-parallelization_analysis.md
+docs/parallelization_analysis.md
+docs/results.txt
 
 # Benchmark data
 benchmark/baseline.json

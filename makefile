@@ -1,5 +1,6 @@
 CC = g++
-CFLAGS  = -g -Wall -O3
+CFLAGS  = -g -Wall -O3 -Iinclude
+SRCDIR = src
 BUILDDIR = build
 
 OBJS = $(BUILDDIR)/main.o $(BUILDDIR)/Cube.o $(BUILDDIR)/Solver2.o \
@@ -16,29 +17,29 @@ solver: $(BUILDDIR) $(OBJS)
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
-$(BUILDDIR)/main.o: main.cpp
-	$(CC) $(CFLAGS) -c main.cpp -o $@
+$(BUILDDIR)/main.o: $(SRCDIR)/main.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/Cube.o: Cube.cpp Cube.h
-	$(CC) $(CFLAGS) -c Cube.cpp -o $@
+$(BUILDDIR)/Cube.o: $(SRCDIR)/Cube.cpp include/Cube.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/Solver2.o: Solver2.cpp Solver2.h
-	$(CC) $(CFLAGS) -c Solver2.cpp -o $@
+$(BUILDDIR)/Solver2.o: $(SRCDIR)/Solver2.cpp include/Solver2.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/Indexer.o: Indexer.cpp Indexer.h
-	$(CC) $(CFLAGS) -c Indexer.cpp -o $@
+$(BUILDDIR)/Indexer.o: $(SRCDIR)/Indexer.cpp include/Indexer.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/PDB.o: PDB.cpp PDB.h
-	$(CC) $(CFLAGS) -c PDB.cpp -o $@
+$(BUILDDIR)/PDB.o: $(SRCDIR)/PDB.cpp include/PDB.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/Solver.o: Solver.cpp Solver.h
-	$(CC) $(CFLAGS) -c Solver.cpp -o $@
+$(BUILDDIR)/Solver.o: $(SRCDIR)/Solver.cpp include/Solver.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/PDBBuilder.o: PDBBuilder.cpp PDBBuilder.h
-	$(CC) $(CFLAGS) -c PDBBuilder.cpp -o $@
+$(BUILDDIR)/PDBBuilder.o: $(SRCDIR)/PDBBuilder.cpp include/PDBBuilder.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/TransitionTable.o: TransitionTable.cpp TransitionTable.h
-	$(CC) $(CFLAGS) -c TransitionTable.cpp -o $@
+$(BUILDDIR)/TransitionTable.o: $(SRCDIR)/TransitionTable.cpp include/TransitionTable.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	$(RM) solver

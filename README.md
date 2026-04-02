@@ -67,7 +67,7 @@ Search time scales exponentially with the complexity of the scramble. A solution
 
 ## Documentation
 
-For a deep dive into the mathematical implementation and Lehmer indexing, see the [report](Korf_IDA_PDB_Report.pdf) included in this repository. The report was submitted as part of the original group project, and was contributed to by all three original members.
+For a deep dive into the mathematical implementation and Lehmer indexing, see the [report](docs/Korf_IDA_PDB_Report.pdf) included in this repository. The report was submitted as part of the original group project, and was contributed to by all three original members.
 
 ## References
 
