@@ -18,7 +18,7 @@ To ensure performance remains high, the project also includes an automated Pytho
 
 ## Technical Overview
 
-The solver guarantees an optimal solution by utilizing Iterative Deepening A* (IDA*) search. To effectively prune the massive search space of 43 quintillion permutations, it relies on several precomputed Pattern Databases (PDBs). A database is used for the corners, which indexes over 88 million states. The solver also uses two disjoint databases for the edges, each covering seven edges and containing over 511 million states. A smaller database tracks the orientation of all twelve edges. The solver calculates the maximum distance from all available databases to provide a strong, admissible heuristic for the search algorithm.
+The solver guarantees an optimal solution by utilizing Iterative Deepening A* (IDA*) search. To effectively prune the massive search space of 43 quintillion permutations, it relies on several precomputed Pattern Databases (PDBs). A database is used for the corners, which indexes over 88 million states. The solver also uses two disjoint databases for the edges, each covering seven edges and containing around 511 million states. A smaller database tracks the orientation of all twelve edges. The solver calculates the maximum distance from all available databases to provide a strong, admissible heuristic for the search algorithm.
 
 ## How to Run (Linux Only)
 

@@ -8,7 +8,11 @@ solver.exe
 *~
 .clang-format
 .vscode
-
+.cache/
+.clangd/
+.clangd
+compile_flags.txt
+compile_commands.json
 
 # Data and Documentation
 databases/
@@ -17,3 +21,6 @@ docs/results.txt
 
 # Benchmark data
 benchmark/baseline.json
+
+# Agent rules and workflows
+.agents/
