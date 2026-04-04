@@ -194,7 +194,7 @@ std::string Solver::solve(Cube cube)
             std::cout << "Search time:  " << seconds << " seconds" << std::endl;
             std::cout << "Speed:        " << formatNumber(static_cast<long long>(statesPerSec)) << " states/sec" << std::endl;
 
-            return movesToString(solution, maxDepth);
+            return movesToString(solution, maxDepth, cube);
         }
 
         totalStatesChecked += ctx.statesChecked;
@@ -214,13 +214,30 @@ std::string Solver::solve(Cube cube)
     return "";
 }
 
-std::string Solver::movesToString(int* solution, int length)
+std::string Solver::movesToString(int* solution, int length, const Cube& cube)
 {
     std::string result;
     for (int i = 0; i < length; i++)
     {
         if (i > 0) result.append(" ");
-        result.append(MOVE_NAMES[solution[i]]);
+        int array_move = solution[i];
+        
+        // Extract the base Face (0-5) and rotation amount (0-2) from the move integer
+        Cube::Face target_array_face = static_cast<Cube::Face>(array_move / 3);
+        int amount = array_move % 3;
+
+        // Find which physical Room Face currently houses this Array Face
+        Cube::Face room_face = Cube::R_FACE;
+        for (int f = 0; f < 6; f++) {
+            if (cube.getMap()[f] == target_array_face) {
+                room_face = static_cast<Cube::Face>(f);
+                break;
+            }
+        }
+
+        // Reconstruct the physical Room move
+        int room_move = (static_cast<int>(room_face) * 3) + amount;
+        result.append(MOVE_NAMES[room_move]);
     }
     return result;
 }

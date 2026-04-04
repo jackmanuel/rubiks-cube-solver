@@ -32,6 +32,10 @@ Cube::Cube()
         this->edges[i].orientation = 0;
     }
 
+    for (int i = 0; i < 6; i++) {
+        this->curr_map[i] = (Face)i;
+    }
+
     this->lastMove = NONE;
     this->depth = 0;
 }
@@ -360,7 +364,7 @@ std::vector<Cube> Cube::generateNeighboursPruned(void)
     return result;
 }
 
-void Cube::r()
+void Cube::r_array()
 {
     this->lastMove = R;
 
@@ -375,7 +379,7 @@ void Cube::r()
     fourCycleEdges(1, 4, 11, 7);
 }
 
-void Cube::rPrime()
+void Cube::r_arrayPrime()
 {
 
     this->lastMove = R_PRIME;
@@ -392,7 +396,7 @@ void Cube::rPrime()
 
 }
 
-void Cube::r2()
+void Cube::r_array2()
 {
     this->lastMove = R2;
 
@@ -405,7 +409,7 @@ void Cube::r2()
 
 
 
-void Cube::u()
+void Cube::u_array()
 {
     this->lastMove = U;
 
@@ -413,7 +417,7 @@ void Cube::u()
     fourCycleEdges(1, 0, 3, 2);
 }
 
-void Cube::uPrime()
+void Cube::u_arrayPrime()
 {
     this->lastMove = U_PRIME;
 
@@ -421,7 +425,7 @@ void Cube::uPrime()
     fourCycleEdges(1, 2, 3, 0);
 }
 
-void Cube::u2()
+void Cube::u_array2()
 {
     this->lastMove = U2;
 
@@ -432,7 +436,7 @@ void Cube::u2()
     swapEdgeCubies(3, 1);
 }
 
-void Cube::f()
+void Cube::f_array()
 {
     this->lastMove = F; 
 
@@ -452,7 +456,7 @@ void Cube::f()
     flipEdgeOrientation(4);
 }
 
-void Cube::fPrime()
+void Cube::f_arrayPrime()
 {
     this->lastMove = F_PRIME;
 
@@ -473,7 +477,7 @@ void Cube::fPrime()
 }
 
 
-void Cube::f2()
+void Cube::f_array2()
 {
     this->lastMove = F2;
 
@@ -484,7 +488,7 @@ void Cube::f2()
     swapEdgeCubies(5, 4);
 }
 
-void Cube::d()
+void Cube::d_array()
 {
     this->lastMove = D;
 
@@ -492,7 +496,7 @@ void Cube::d()
     fourCycleEdges(8, 9, 10, 11);
 }
 
-void Cube::dPrime()
+void Cube::d_arrayPrime()
 {
     this->lastMove = D_PRIME;
 
@@ -500,7 +504,7 @@ void Cube::dPrime()
     fourCycleEdges(9, 8, 11, 10);
 }
 
-void Cube::d2()
+void Cube::d_array2()
 {
     this->lastMove = D2;
 
@@ -511,7 +515,7 @@ void Cube::d2()
     swapEdgeCubies(8, 10);
 }
 
-void Cube::l()
+void Cube::l_array()
 {
     this->lastMove = L;
 
@@ -526,7 +530,7 @@ void Cube::l()
     fourCycleEdges(5, 3, 6, 9);
 }
 
-void Cube::lPrime()
+void Cube::l_arrayPrime()
 {
     this->lastMove = L_PRIME;
 
@@ -541,7 +545,7 @@ void Cube::lPrime()
     fourCycleEdges(3, 5, 9, 6);
 }
 
-void Cube::l2()
+void Cube::l_array2()
 {
     this->lastMove = L2;
 
@@ -552,7 +556,7 @@ void Cube::l2()
     swapEdgeCubies(6, 5);
 }
 
-void Cube::b()
+void Cube::b_array()
 {
     this->lastMove = B;
 
@@ -572,7 +576,7 @@ void Cube::b()
     flipEdgeOrientation(6);
 }
 
-void Cube::bPrime()
+void Cube::b_arrayPrime()
 {
     this->lastMove = B_PRIME;
 
@@ -592,7 +596,7 @@ void Cube::bPrime()
     flipEdgeOrientation(6);
 }
 
-void Cube::b2()
+void Cube::b_array2()
 {
     this->lastMove = B2;
 
@@ -602,6 +606,85 @@ void Cube::b2()
     swapEdgeCubies(0, 10);
     swapEdgeCubies(6, 7);
 }
+
+void Cube::x() {
+    Face tempU = curr_map[U_FACE], tempB = curr_map[B_FACE], tempD = curr_map[D_FACE], tempF = curr_map[F_FACE];
+    curr_map[U_FACE] = tempF;
+    curr_map[B_FACE] = tempU;
+    curr_map[D_FACE] = tempB;
+    curr_map[F_FACE] = tempD;
+}
+void Cube::xPrime() { x(); x(); x(); }
+void Cube::x2() { x(); x(); }
+
+void Cube::y() {
+    Face tempL = curr_map[L_FACE], tempB = curr_map[B_FACE], tempR = curr_map[R_FACE], tempF = curr_map[F_FACE];
+    curr_map[L_FACE] = tempF;
+    curr_map[B_FACE] = tempL;
+    curr_map[R_FACE] = tempB;
+    curr_map[F_FACE] = tempR;
+}
+void Cube::yPrime() { y(); y(); y(); }
+void Cube::y2() { y(); y(); }
+
+void Cube::z() {
+    Face tempR = curr_map[R_FACE], tempD = curr_map[D_FACE], tempL = curr_map[L_FACE], tempU = curr_map[U_FACE];
+    curr_map[R_FACE] = tempU;
+    curr_map[D_FACE] = tempR;
+    curr_map[L_FACE] = tempD;
+    curr_map[U_FACE] = tempL;
+}
+void Cube::zPrime() { z(); z(); z(); }
+void Cube::z2() { z(); z(); }
+
+void Cube::applyMapped(Face f, int amount) {
+    Face target = this->curr_map[f];
+    switch (target) {
+        case U_FACE: amount == 1 ? u_array() : amount == 2 ? u_arrayPrime() : u_array2(); break;
+        case D_FACE: amount == 1 ? d_array() : amount == 2 ? d_arrayPrime() : d_array2(); break;
+        case F_FACE: amount == 1 ? f_array() : amount == 2 ? f_arrayPrime() : f_array2(); break;
+        case B_FACE: amount == 1 ? b_array() : amount == 2 ? b_arrayPrime() : b_array2(); break;
+        case L_FACE: amount == 1 ? l_array() : amount == 2 ? l_arrayPrime() : l_array2(); break;
+        case R_FACE: amount == 1 ? r_array() : amount == 2 ? r_arrayPrime() : r_array2(); break;
+    }
+}
+
+void Cube::r() { applyMapped(R_FACE, 1); }
+void Cube::rPrime() { applyMapped(R_FACE, 2); }
+void Cube::r2() { applyMapped(R_FACE, 3); }
+
+void Cube::u() { applyMapped(U_FACE, 1); }
+void Cube::uPrime() { applyMapped(U_FACE, 2); }
+void Cube::u2() { applyMapped(U_FACE, 3); }
+
+void Cube::f() { applyMapped(F_FACE, 1); }
+void Cube::fPrime() { applyMapped(F_FACE, 2); }
+void Cube::f2() { applyMapped(F_FACE, 3); }
+
+void Cube::d() { applyMapped(D_FACE, 1); }
+void Cube::dPrime() { applyMapped(D_FACE, 2); }
+void Cube::d2() { applyMapped(D_FACE, 3); }
+
+void Cube::b() { applyMapped(B_FACE, 1); }
+void Cube::bPrime() { applyMapped(B_FACE, 2); }
+void Cube::b2() { applyMapped(B_FACE, 3); }
+
+void Cube::l() { applyMapped(L_FACE, 1); }
+void Cube::lPrime() { applyMapped(L_FACE, 2); }
+void Cube::l2() { applyMapped(L_FACE, 3); }
+
+void Cube::m() { r(); lPrime(); xPrime(); }
+void Cube::mPrime() { rPrime(); l(); x(); }
+void Cube::m2() { r2(); l2(); x2(); }
+
+void Cube::e() { u(); dPrime(); yPrime(); }
+void Cube::ePrime() { uPrime(); d(); y(); }
+void Cube::e2() { u2(); d2(); y2(); }
+
+void Cube::s() { fPrime(); b(); z(); }
+void Cube::sPrime() { f(); bPrime(); zPrime(); }
+void Cube::s2() { f2(); b2(); z2(); }
+
 
 // outcome of the function:
 // all argurments shift to the left by 1
@@ -720,6 +803,24 @@ void Cube::applyMoves(std::string moveList)
         else if (moveStr == "B")  b();
         else if (moveStr == "B'") bPrime();
         else if (moveStr == "B2") b2();
+        else if (moveStr == "M")  m();
+        else if (moveStr == "M'") mPrime();
+        else if (moveStr == "M2") m2();
+        else if (moveStr == "E")  e();
+        else if (moveStr == "E'") ePrime();
+        else if (moveStr == "E2") e2();
+        else if (moveStr == "S")  s();
+        else if (moveStr == "S'") sPrime();
+        else if (moveStr == "S2") s2();
+        else if (moveStr == "x")  x();
+        else if (moveStr == "x'") xPrime();
+        else if (moveStr == "x2") x2();
+        else if (moveStr == "y")  y();
+        else if (moveStr == "y'") yPrime();
+        else if (moveStr == "y2") y2();
+        else if (moveStr == "z")  z();
+        else if (moveStr == "z'") zPrime();
+        else if (moveStr == "z2") z2();
         else
         {
             throw std::runtime_error("Invalid move encountered in scramble: \"" + moveStr + "\"");

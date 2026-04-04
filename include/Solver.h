@@ -47,5 +47,5 @@ class Solver
         static const MoveList MoveTable[NUM_MOVES + 1];
 
         // Convert solution (array of move indices) to string
-        static std::string movesToString(int* solution, int length);
+        static std::string movesToString(int* solution, int length, const Cube& cube);
 };

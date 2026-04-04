@@ -66,6 +66,8 @@ class Cube
         {
             UP, DOWN, LEFT, RIGHT
         };
+
+        enum Face { R_FACE = 0, U_FACE, F_FACE, D_FACE, B_FACE, L_FACE };
         
         struct Cubie
         {
@@ -123,12 +125,66 @@ class Cube
         void bPrime();
         void b2();
 
+        void x();
+        void xPrime();
+        void x2();
+
+        void y();
+        void yPrime();
+        void y2();
+
+        void z();
+        void zPrime();
+        void z2();
+
+        void m();
+        void mPrime();
+        void m2();
+
+        void e();
+        void ePrime();
+        void e2();
+
+        void s();
+        void sPrime();
+        void s2();
+
         // Dispatch: apply move by integer index (0-17)
         // Order: R,R',R2, U,U',U2, F,F',F2, D,D',D2, B,B',B2, L,L',L2
         static void applyMoveByIndex(Cube& cube, int moveIndex);
+        
+        const Face* getMap() const { return curr_map; }
 
 
     private:
+
+        Face curr_map[6];
+        void applyMapped(Face f, int amount);
+
+        void r_array();
+        void r_arrayPrime();
+        void r_array2();
+
+        void u_array();
+        void u_arrayPrime();
+        void u_array2();
+
+        void f_array();
+        void f_arrayPrime();
+        void f_array2();
+
+        void d_array();
+        void d_arrayPrime();
+        void d_array2();
+
+        void l_array();
+        void l_arrayPrime();
+        void l_array2();
+
+        void b_array();
+        void b_arrayPrime();
+        void b_array2();
+
 
         std::array<Cubie, 12> edges;
         std::array<Cubie, 8> corners;
