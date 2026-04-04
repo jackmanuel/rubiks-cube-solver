@@ -8,6 +8,8 @@
 #include "TransitionTable.h"
 #include "DatabaseConstants.h"
 
+PDB* Solver::sharedPDB = nullptr;
+
 // Move names indexed by move ID (0-17)
 static const char* MOVE_NAMES[18] = {
     "R", "R'", "R2",
@@ -130,6 +132,35 @@ std::string Solver::solve(Cube cube)
     PDB pdb(DatabaseConstants::CORNER_DB, DatabaseConstants::EDGE1_DB,
             DatabaseConstants::EDGE2_DB, DatabaseConstants::ORIENT_DB);
 
+    return solveWithPDB(cube, &pdb);
+}
+
+void Solver::init()
+{
+    if (sharedPDB == nullptr) {
+        sharedPDB = new PDB(DatabaseConstants::CORNER_DB, DatabaseConstants::EDGE1_DB,
+                           DatabaseConstants::EDGE2_DB, DatabaseConstants::ORIENT_DB);
+    }
+}
+
+void Solver::cleanup()
+{
+    if (sharedPDB != nullptr) {
+        delete sharedPDB;
+        sharedPDB = nullptr;
+    }
+}
+
+std::string Solver::solveWithPDB(Cube cube)
+{
+    if (sharedPDB == nullptr) {
+        throw std::runtime_error("Pattern databases not initialized. Call Solver::init() first.");
+    }
+    return solveWithPDB(cube, sharedPDB);
+}
+
+std::string Solver::solveWithPDB(Cube cube, PDB* pdb)
+{
     // Extract decomposed coordinates from the scrambled cube (done ONCE)
     Indexer indexer;
     uint16_t cPerm    = (uint16_t)indexer.getCornerPermRankFromCube(cube);
@@ -144,9 +175,9 @@ std::string Solver::solve(Cube cube)
     uint32_t cState = ((uint32_t)cPerm << 16) | cOrient;
     uint32_t cIdx = cPerm * 2187 + cOrient;
 
-    uint8_t h = pdb.getEdge1DB()[e1Idx];
-    uint8_t h2 = pdb.getEdge2DB()[e2Idx];
-    uint8_t hCorner = pdb.getCornerDB()[cIdx];
+    uint8_t h = pdb->getEdge1DB()[e1Idx];
+    uint8_t h2 = pdb->getEdge2DB()[e2Idx];
+    uint8_t hCorner = pdb->getCornerDB()[cIdx];
 
     if (h2 > h) h = h2;
     if (hCorner > h) h = hCorner;
@@ -166,9 +197,9 @@ std::string Solver::solve(Cube cube)
     long long totalStatesChecked = 0;
 
     SearchContext ctx;
-    ctx.edge1DB = pdb.getEdge1DB().data();
-    ctx.edge2DB = pdb.getEdge2DB().data();
-    ctx.cornerDB = pdb.getCornerDB().data();
+    ctx.edge1DB = pdb->getEdge1DB().data();
+    ctx.edge2DB = pdb->getEdge2DB().data();
+    ctx.cornerDB = pdb->getCornerDB().data();
     ctx.solution = solution;
 
     auto startTime = std::chrono::high_resolution_clock::now();

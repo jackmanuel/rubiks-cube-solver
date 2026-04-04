@@ -81,25 +81,53 @@ static void generateDatabases(const std::vector<std::string>& missing)
 
 int main(int argc, char const *argv[])
 {
-    if (argc < 2)
+    bool continuous = false;
+    std::string inputFile = "";
+    std::vector<std::string> args;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--continuous") {
+            continuous = true;
+        } else if (arg == "--input") {
+            if (i + 1 < argc) {
+                inputFile = argv[++i];
+            } else {
+                std::cerr << "Error: --input requires a filename." << std::endl;
+                return 1;
+            }
+        } else if (arg == "--build" || arg == "--build-tables") {
+            // These are handled below, but we need to keep them in the args list
+            args.push_back(arg);
+        } else if (arg.size() >= 2 && arg[0] == '-' && arg[1] == '-') {
+            std::cerr << "Error: Unknown flag '" << arg << "'" << std::endl;
+            std::cerr << "Usage: ./solver [\"<scramble>\"] [--continuous] [--input <file>] [--build <target>] [--build-tables]" << std::endl;
+            return 1;
+        } else {
+            args.push_back(arg);
+        }
+    }
+
+    if (args.empty() && !continuous && inputFile == "")
     {
         std::cerr << "Usage: ./solver \"<scramble>\"" << std::endl;
+        std::cerr << "       ./solver --continuous [\"<scramble>\"]" << std::endl;
+        std::cerr << "       ./solver --input <scrambles.txt>" << std::endl;
         std::cerr << "       ./solver --build <corners|edge1|edge2|orient|all>" << std::endl;
         std::cerr << "       ./solver --build-tables" << std::endl;
         std::cerr << "Example: ./solver \"D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'\"" << std::endl;
         return 1;
     }
 
-    if (std::string(argv[1]) == "--build")
+    if (!args.empty() && args[0] == "--build")
     {
-        if (argc < 3)
+        if (args.size() < 2)
         {
             std::cerr << "Error: Target required for --build." << std::endl;
             std::cerr << "Usage: ./solver --build <corners|edge1|edge2|orient|all>" << std::endl;
             return 1;
         }
 
-        std::string target = argv[2];
+        std::string target = args[1];
         std::vector<std::string> toBuild;
         
         if (target == "corners")     toBuild.push_back(CORNER_DB);
@@ -132,7 +160,7 @@ int main(int argc, char const *argv[])
         return 0;
     }
 
-    if (std::string(argv[1]) == "--build-tables")
+    if (!args.empty() && args[0] == "--build-tables")
     {
         MKDIR(DB_DIR.c_str());
         try
@@ -207,21 +235,84 @@ int main(int argc, char const *argv[])
     {
         std::cout << "Starting program." << std::endl;
 
-        // Initialize transition tables (load from disk or generate)
+        // Initialize transition tables and pattern databases (load from disk or generate)
         MKDIR(DB_DIR.c_str());
         TransitionTable::init();
+        Solver::init();
 
-        Cube cube;
-        cube.applyMoves(argv[1]);
+        if (!inputFile.empty()) {
+            std::ifstream file(inputFile);
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not open input file: " + inputFile);
+            }
+            std::string line;
+            while (std::getline(file, line)) {
+                if (line.empty()) continue;
+                // Trim windows \r
+                if (!line.empty() && line.back() == '\r') line.pop_back();
 
-        std::string solution = Solver::solve(cube);
+                try {
+                    Cube cube;
+                    cube.applyMoves(line);
+                    std::cout << "\nScramble: " << line << std::endl;
+                    std::string solution = Solver::solveWithPDB(cube);
+                    if (!solution.empty()) std::cout << "Solution: " << solution << std::endl;
+                } catch (const std::exception& e) {
+                    std::cerr << "Error with scramble in file: " << e.what() << std::endl;
+                }
+            }
+        } else {
+            std::string current_scramble = args.empty() ? "" : args[0];
 
-        std::cout << "Scramble: " << argv[1] << std::endl;
-        if (!solution.empty())
-        {
-            std::cout << "Solution: " << solution << std::endl;
+            do {
+                if (current_scramble.empty()) {
+                    std::cout << "\nEnter a scramble (or 'q'/'quit' to exit): ";
+                    std::string input;
+                    if (!std::getline(std::cin, input)) {
+                        break;
+                    }
+                    
+                    // Trim trailing newline just in case
+                    if (!input.empty() && input.back() == '\r') {
+                        input.pop_back(); // Windows line ending support
+                    }
+                    
+                    if (input == "q" || input == "quit") {
+                        break;
+                    }
+                    current_scramble = input;
+                }
+
+                // Skip empty scrambles if user just pressed enter
+                if (current_scramble.empty() && continuous) {
+                    continue;
+                }
+                if (current_scramble.empty() && !continuous) {
+                    break;
+                }
+
+                try {
+                    Cube cube;
+                    cube.applyMoves(current_scramble);
+
+                    std::cout << "Scramble: " << current_scramble << std::endl;
+
+                    std::string solution = Solver::solveWithPDB(cube);
+
+                    if (!solution.empty())
+                    {
+                        std::cout << "Solution: " << solution << std::endl;
+                    }
+                } catch (const std::exception& e) {
+                    std::cerr << "Error with scramble: " << e.what() << std::endl;
+                }
+
+                current_scramble = ""; 
+
+            } while (continuous);
         }
 
+        Solver::cleanup();
         TransitionTable::cleanup();
         std::cout << "Exiting program." << std::endl;
     }

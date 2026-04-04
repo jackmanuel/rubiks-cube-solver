@@ -32,7 +32,16 @@ class Solver
         // The Cube is used only once to extract initial coordinates.
         static std::string solve(Cube cube);
 
+        // Pre-load pattern databases into memory. Must be called once before solveWithPDB.
+        static void init();
+
+        // Solve using already-loaded databases.
+        static std::string solveWithPDB(Cube cube);
+        
+        static void cleanup();
+
     private:
+        static std::string solveWithPDB(Cube cube, PDB* pdb);
         Solver(void);
 
         // Recursive IDA* DFS on decomposed coordinates
@@ -45,6 +54,8 @@ class Solver
             int allowed[NUM_MOVES];
         };
         static const MoveList MoveTable[NUM_MOVES + 1];
+
+        static PDB* sharedPDB;
 
         // Convert solution (array of move indices) to string
         static std::string movesToString(int* solution, int length, const Cube& cube);
