@@ -45,9 +45,10 @@ make
 
 The solver requires several database files to function effectively. These total approximately 1GB on disk. Building the edge databases is a heavy operation and can take over three hours for each edge database. The transition tables must also be generated before searching, though this process is much faster.
 
-You can build all required databases by running:
+You can generate all required data by running the transition table and database build commands:
 
 ```bash
+./solver --build-tables
 ./solver --build all
 ```
 
@@ -60,6 +61,8 @@ Run the solver by passing a scramble string in standard Rubik's notation:
 ```bash
 ./solver "D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'"
 ```
+
+Loading the pattern databases from disk into memory is a slow process that takes several seconds. To avoid this overhead when solving multiple cubes, you can use the `--continuous` flag to enter an interactive session where you can input scrambles one by one. Alternatively, you can use the `--input` flag followed by a filename to process a list of scrambles from a text file, solving each one sequentially.
 
 ## Performance Expectation
 
