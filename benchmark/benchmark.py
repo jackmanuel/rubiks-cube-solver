@@ -24,71 +24,89 @@ def get_root_dir():
 
 def build_solver():
     root_dir = get_root_dir()
-    print("Building solver in " + root_dir + "...")
+    print("Building solver in " + root_dir)
     result = subprocess.run(["make"], cwd=root_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode != 0:
         print("Build failed!")
         print(result.stderr)
         sys.exit(1)
     
+    # Check for the executable
     solver_path = os.path.join(root_dir, "solver")
     if not os.path.exists(solver_path):
         print("Executable solver not found after build!")
         sys.exit(1)
     print("Build successful.")
 
-def run_scramble(scramble):
+def run_batch(scrambles):
     root_dir = get_root_dir()
-    solver_path = os.path.join(root_dir, "solver")
-    result = subprocess.run([solver_path, scramble], cwd=root_dir, capture_output=True, text=True)
+    
+    # Write scrambles to a temporary file
+    temp_file = os.path.join(root_dir, "benchmark_tmp.txt")
+    with open(temp_file, "w") as f:
+        for s in scrambles:
+            f.write(s + "\n")
+    
+    # Run solver once with --input
+    result = subprocess.run(["./solver", "--input", "benchmark_tmp.txt"], cwd=root_dir, capture_output=True, text=True)
+    
+    if os.path.exists(temp_file):
+        os.remove(temp_file)
+
     if result.returncode != 0:
-        print(f"Solver crashed on scramble: {scramble}")
+        print("Solver crashed during batch processing!")
         print(result.stderr)
-        return None
+        return []
 
-    # Parse output
+    # Parse output for multiple scrambles
     output = result.stdout
-    metrics = {
-        "states": 0,
-        "time": 0.0,
-        "speed": 0.0,
-        "solved": False
-    }
-
+    all_metrics = []
+    current_metrics = None
+    
     for line in output.split('\n'):
-        if "SOLUTION FOUND" in line:
-            metrics["solved"] = True
-        elif "Total states:" in line:
-            # e.g., "Total states: 12,345"
+        if "Scramble:" in line:
+            if current_metrics:
+                all_metrics.append(current_metrics)
+            current_metrics = {
+                "scramble": line.split(':', 1)[1].strip(),
+                "states": 0,
+                "time": 0.0,
+                "speed": 0.0,
+                "solved": False
+            }
+        elif "SOLUTION FOUND" in line and current_metrics:
+            current_metrics["solved"] = True
+        elif "Total states:" in line and current_metrics:
             parts = line.split(':')
             val_str = parts[1].replace(',', '').strip()
             if val_str:
-                metrics["states"] = int(val_str)
-        elif "Search time:" in line:
-            # e.g., "Search time:  0.123 seconds"
+                current_metrics["states"] = int(val_str)
+        elif "Search time:" in line and current_metrics:
             parts = line.split(':')
             val_str = parts[1].replace('seconds', '').strip()
             if val_str:
-                metrics["time"] = float(val_str)
-        elif "Speed:" in line:
-            # e.g., "Speed:        100,000 states/sec"
+                current_metrics["time"] = float(val_str)
+        elif "Speed:" in line and current_metrics:
             parts = line.split(':')
             val_str = parts[1].replace('states/sec', '').replace(',', '').strip()
             if val_str:
-                metrics["speed"] = float(val_str)
+                current_metrics["speed"] = float(val_str)
 
-    return metrics
+    if current_metrics:
+        all_metrics.append(current_metrics)
+        
+    return all_metrics
 
 def print_diff(baseline_val, current_val, metric_name, inverse=False):
     if baseline_val == 0:
-        return f"{current_val:>10.2f} (N/A)"
+        return "(N/A)"
     
     diff = current_val - baseline_val
     pct = (diff / baseline_val) * 100
     
     # inverse=False means higher is better (e.g. speed)
     # inverse=True means lower is better (e.g. time)
-    if pct == 0:
+    if abs(pct) < 0.01:
         color = "\033[90m" # gray
         sign = ""
     elif (pct > 0 and not inverse) or (pct < 0 and inverse):
@@ -98,7 +116,7 @@ def print_diff(baseline_val, current_val, metric_name, inverse=False):
         color = "\033[91m" # red
         sign = "+" if pct > 0 else ""
 
-    return f"{current_val:>10.2f} ({color}{sign}{pct:.1f}%\033[0m)"
+    return f"{color}{sign}{pct:.1f}%\033[0m"
 
 def main():
     parser = argparse.ArgumentParser(description="Rubik's Cube Solver Benchmark Suite")
@@ -108,19 +126,23 @@ def main():
     build_solver()
 
     results = []
-    print(f"\nRunning {len(SCRAMBLES)} benchmark scrambles...")
+    print(f"\nLoaded {len(SCRAMBLES)} benchmark scrambles.")
+    print("Benchmark in progress...")
     
-    for i, scramble in enumerate(SCRAMBLES):
-        print(f"[{i+1}/{len(SCRAMBLES)}] Scramble: {scramble}")
-        metrics = run_scramble(scramble)
-        if metrics:
-            results.append({
-                "scramble": scramble,
-                "metrics": metrics
-            })
-            print(f"   -> {metrics['time']:.3f}s, {metrics['speed']:.0f} states/sec")
-        else:
-            print("   -> FAILED")
+    batch_results = run_batch(SCRAMBLES)
+    results = []
+    
+    print("\nResults:")
+    for i, metrics in enumerate(batch_results):
+        results.append({
+            "scramble": metrics["scramble"],
+            "metrics": metrics
+        })
+        print(f"[{i+1}/{len(SCRAMBLES)}] Scramble: {metrics['scramble']}")
+        print(f"   -> {metrics['time']:.3f}s, {metrics['speed']:.0f} states/sec")
+    
+    if len(results) < len(SCRAMBLES):
+        print(f"\nWarning: Only {len(results)}/{len(SCRAMBLES)} scrambles were processed successfully.")
 
     # Aggregate
     total_time = sum(r["metrics"]["time"] for r in results)
@@ -172,13 +194,13 @@ def main():
                     continue
                     
                 print(f"\nCOMPARISON WITH BASELINE: {name}")
-                print("-" * 50)
-                print(f"Metric         | Baseline   | Current          | Change")
-                print("-" * 50)
-                print(f"Total Time (s) | {baseline['total_time']:<10.3f} | {print_diff(baseline['total_time'], total_time, 'time', inverse=True)}")
-                print(f"Net Speed      | {baseline['avg_speed']:<10.0f} | {print_diff(baseline['avg_speed'], avg_speed, 'speed')}")
-                print(f"Total States   | {baseline['total_states']:<10,} | {print_diff(baseline['total_states'], total_states, 'states', inverse=True)}")
-                print("-" * 50)
+                print("-" * 65)
+                print(f"Metric         | Baseline     | Current      | Change")
+                print("-" * 65)
+                print(f"Total Time (s) | {baseline['total_time']:>12,.3f} | {total_time:>12,.3f} | {print_diff(baseline['total_time'], total_time, 'time', inverse=True)}")
+                print(f"Net Speed      | {baseline['avg_speed']:>12,.0f} | {avg_speed:>12,.0f} | {print_diff(baseline['avg_speed'], avg_speed, 'speed')}")
+                print(f"Total States   | {baseline['total_states']:>12,} | {total_states:>12,} | {print_diff(baseline['total_states'], total_states, 'states', inverse=True)}")
+                print("-" * 65)
         else:
             print("\nNo baseline.json found. Run with --save-baseline to set a baseline.")
 
