@@ -116,7 +116,7 @@ private:
         {
             // Depth mode: show depth instead of ETA (for DFS-based generation
             // where linear ETA would be misleading)
-            std::printf("\r%s [%s] %5.1f%%  %s/%s  elapsed %s  depth %d/%d   ",
+            std::printf("\r\033[K%s [%s] %5.1f%%  %s/%s  elapsed %s  depth %d/%d",
                 label_.c_str(),
                 bar.c_str(),
                 pct,
@@ -133,7 +133,7 @@ private:
             {
                 eta = (elapsed / pct) * (100.0 - pct);
             }
-            std::printf("\r%s [%s] %5.1f%%  %s/%s  elapsed %s  eta %s   ",
+            std::printf("\r\033[K%s [%s] %5.1f%%  %s/%s  elapsed %s  eta %s",
                 label_.c_str(),
                 bar.c_str(),
                 pct,

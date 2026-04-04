@@ -93,7 +93,7 @@ bool Solver::dfs(
     ctx.statesChecked++;
     if ((ctx.statesChecked & 0xFFFFF) == 0)
     {
-        std::cout << "\rsearching depth " << ctx.maxDepth << "... (" << formatNumber(ctx.statesChecked) << " states checked)      " << std::flush;
+        std::cout << "\r\033[Ksearching depth " << ctx.maxDepth << "... (" << formatNumber(ctx.statesChecked) << " states checked)" << std::flush;
     }
 
     // Goal test: heuristic is 0 if and only if the cube is solved.
@@ -207,7 +207,7 @@ std::string Solver::solveWithPDB(Cube cube, PDB* pdb)
     // IDA* loop: iteratively deepen until solution found
     while (maxDepth <= MAX_MOVES)
     {
-        std::cout << "\rsearching depth " << maxDepth << "... (" << formatNumber(0) << " states checked)      " << std::flush;
+        std::cout << "\r\033[Ksearching depth " << maxDepth << "... (" << formatNumber(0) << " states checked)" << std::flush;
 
         ctx.statesChecked = 0;
         ctx.maxDepth = maxDepth;
@@ -229,7 +229,7 @@ std::string Solver::solveWithPDB(Cube cube, PDB* pdb)
         }
 
         totalStatesChecked += ctx.statesChecked;
-        std::cout << "\rsearching depth " << maxDepth << "... done (" << formatNumber(ctx.statesChecked) << " states checked)      " << std::flush;
+        std::cout << "\r\033[Ksearching depth " << maxDepth << "... done (" << formatNumber(ctx.statesChecked) << " states checked)" << std::flush;
         maxDepth++;
     }
 
