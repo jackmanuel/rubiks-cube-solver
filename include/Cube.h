@@ -149,6 +149,30 @@ class Cube
         void sPrime();
         void s2();
 
+        void rw();
+        void rwPrime();
+        void rw2();
+
+        void lw();
+        void lwPrime();
+        void lw2();
+
+        void uw();
+        void uwPrime();
+        void uw2();
+
+        void dw();
+        void dwPrime();
+        void dw2();
+
+        void fw();
+        void fwPrime();
+        void fw2();
+
+        void bw();
+        void bwPrime();
+        void bw2();
+
         // Dispatch: apply move by integer index (0-17)
         // Order: R,R',R2, U,U',U2, F,F',F2, D,D',D2, B,B',B2, L,L',L2
         static void applyMoveByIndex(Cube& cube, int moveIndex);

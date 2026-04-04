@@ -685,6 +685,30 @@ void Cube::s() { fPrime(); b(); z(); }
 void Cube::sPrime() { f(); bPrime(); zPrime(); }
 void Cube::s2() { f2(); b2(); z2(); }
 
+void Cube::rw() { l(); x(); }
+void Cube::rwPrime() { lPrime(); xPrime(); }
+void Cube::rw2() { l2(); x2(); }
+
+void Cube::lw() { r(); xPrime(); }
+void Cube::lwPrime() { rPrime(); x(); }
+void Cube::lw2() { r2(); x2(); }
+
+void Cube::uw() { d(); y(); }
+void Cube::uwPrime() { dPrime(); yPrime(); }
+void Cube::uw2() { d2(); y2(); }
+
+void Cube::dw() { u(); yPrime(); }
+void Cube::dwPrime() { uPrime(); y(); }
+void Cube::dw2() { u2(); y2(); }
+
+void Cube::fw() { b(); z(); }
+void Cube::fwPrime() { bPrime(); zPrime(); }
+void Cube::fw2() { b2(); z2(); }
+
+void Cube::bw() { f(); zPrime(); }
+void Cube::bwPrime() { fPrime(); z(); }
+void Cube::bw2() { f2(); z2(); }
+
 
 // outcome of the function:
 // all argurments shift to the left by 1
@@ -821,6 +845,24 @@ void Cube::applyMoves(std::string moveList)
         else if (moveStr == "z")  z();
         else if (moveStr == "z'") zPrime();
         else if (moveStr == "z2") z2();
+        else if (moveStr == "Rw" || moveStr == "r") rw();
+        else if (moveStr == "Rw'" || moveStr == "r'") rwPrime();
+        else if (moveStr == "Rw2" || moveStr == "r2") rw2();
+        else if (moveStr == "Lw" || moveStr == "l") lw();
+        else if (moveStr == "Lw'" || moveStr == "l'") lwPrime();
+        else if (moveStr == "Lw2" || moveStr == "l2") lw2();
+        else if (moveStr == "Uw" || moveStr == "u") uw();
+        else if (moveStr == "Uw'" || moveStr == "u'") uwPrime();
+        else if (moveStr == "Uw2" || moveStr == "u2") uw2();
+        else if (moveStr == "Dw" || moveStr == "d") dw();
+        else if (moveStr == "Dw'" || moveStr == "d'") dwPrime();
+        else if (moveStr == "Dw2" || moveStr == "d2") dw2();
+        else if (moveStr == "Fw" || moveStr == "f") fw();
+        else if (moveStr == "Fw'" || moveStr == "f'") fwPrime();
+        else if (moveStr == "Fw2" || moveStr == "f2") fw2();
+        else if (moveStr == "Bw" || moveStr == "b") bw();
+        else if (moveStr == "Bw'" || moveStr == "b'") bwPrime();
+        else if (moveStr == "Bw2" || moveStr == "b2") bw2();
         else
         {
             throw std::runtime_error("Invalid move encountered in scramble: \"" + moveStr + "\"");
