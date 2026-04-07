@@ -38,6 +38,9 @@ static std::vector<std::string> getMissingDatabases()
 
 static void generateDatabases(const std::vector<std::string>& missing)
 {
+    // Ensure transition tables are initialized as they are required for parallel PDB building
+    TransitionTable::init();
+
     // Create the Databases directory if it doesn't exist
     MKDIR(DB_DIR.c_str());
 

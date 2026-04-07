@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS  = -g -Wall -O3 -Iinclude
+CFLAGS  = -g -Wall -O3 -Iinclude -pthread -std=c++17
 SRCDIR = src
 BUILDDIR = build
 

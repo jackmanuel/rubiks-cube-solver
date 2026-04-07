@@ -490,6 +490,8 @@ void generate()
 
 void init()
 {
+    if (cornerPerm != nullptr) return;
+
     // Try loading from disk first
     std::cout << "Loading transition tables..." << std::endl;
 
