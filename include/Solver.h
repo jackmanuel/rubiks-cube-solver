@@ -2,10 +2,8 @@
 
 #include <string>
 #include <cstdint>
-
 #include <atomic>
-#include <thread>
-#include <vector>
+
 #include "PDB.h"
 
 // State is bitpacked into 3 uint32_t registers to hit the exact 

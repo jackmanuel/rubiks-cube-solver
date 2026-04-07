@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <string>
 
 #include "TransitionTable.h"
 #include "Cube.h"

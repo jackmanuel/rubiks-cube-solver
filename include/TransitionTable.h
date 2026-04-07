@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 namespace TransitionTable {
     static constexpr int NUM_MOVES = 18;

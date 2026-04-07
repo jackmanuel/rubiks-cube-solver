@@ -12,7 +12,6 @@
 #pragma once
 
 #include <cstdint>
-#include <cstring>
 #include <array>
 #include <string>
 #include <vector>
