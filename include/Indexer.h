@@ -13,7 +13,7 @@ class Indexer
 
         static const int NUM_EDGES_IN_PDB = 7;
 
-        // Combined PDB indices (original API, still used for PDB building and initial state)
+        // Combined PDB indices for pattern database construction and initial search.
         uint32_t getCornerIndex(Cube cube);
         uint32_t getEdgeIndex1(Cube cube);
         uint32_t getEdgeIndex2(Cube cube);

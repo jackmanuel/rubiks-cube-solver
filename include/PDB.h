@@ -10,7 +10,7 @@ class PDB
             std::string edge2Filename, std::string orientFilename);
         ~PDB(void);
 
-        // Original API (still works, used for initial heuristic estimate)
+        // Heuristic lower bound based on the current cube state.
         int getMoveCountLowerBound(Cube cube);
 
         // Direct array access for the coordinate-level solver

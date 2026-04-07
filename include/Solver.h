@@ -8,8 +8,8 @@
 #include <vector>
 #include "PDB.h"
 
-// Removed CubeState. State is now bitpacked into 3 uint32_t registers to 
-// hit the exact 6-argument limit of x64 SysV calling convention.
+// State is bitpacked into 3 uint32_t registers to hit the exact 
+// 6-argument limit of x64 SysV calling convention.
 
 struct SearchContext {
     const uint8_t* edge1DB;

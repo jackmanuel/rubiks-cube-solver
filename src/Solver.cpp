@@ -94,8 +94,8 @@ bool Solver::dfs(
     if (ctx.found->load()) return false;
 
     ctx.statesChecked++;
-    // We removed the inline progress report to avoid flickering in multithreaded mode.
-    // The main thread will calculate and display aggregate throughput.
+    // Aggregate throughput is calculated and displayed by the main thread 
+    // to avoid terminal flickering in multithreaded mode.
 
     // Goal test: heuristic is 0 if and only if the cube is solved.
     if (h == 0)
