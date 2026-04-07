@@ -197,7 +197,7 @@ int main(int argc, char const *argv[])
         }
         std::cerr << std::endl;
         std::cerr << "These databases can be generated automatically, but be aware:" << std::endl;
-        std::cerr << "  * The edge databases (~511M entries each) now take less than one minute to generate." << std::endl;
+        std::cerr << "  * The databases should take less than one minute to generate." << std::endl;
         std::cerr << "  * Generation requires significant memory (1GB+)." << std::endl;
         std::cerr << "  * The total database size on disk is ~1GB." << std::endl;
         std::cerr << std::endl;
