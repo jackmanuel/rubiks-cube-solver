@@ -1,14 +1,5 @@
 #pragma once
 
-/* ideas:
-
-iterate through ~420M states that are 11 moves or fewer from solved
-
-for every unique state, add 24 entries to the PDB for 24 symmetries
-
-
-*/
-
 #include <string>
 #include <cstdint>
 
