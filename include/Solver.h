@@ -3,6 +3,9 @@
 #include <string>
 #include <cstdint>
 
+#include <atomic>
+#include <thread>
+#include <vector>
 #include "PDB.h"
 
 // Removed CubeState. State is now bitpacked into 3 uint32_t registers to 
@@ -15,6 +18,7 @@ struct SearchContext {
     int* solution;
     long long statesChecked;
     int maxDepth;
+    std::atomic<bool>* found;
 };
 
 class Solver
