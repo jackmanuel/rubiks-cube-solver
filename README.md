@@ -8,6 +8,8 @@ This project was originally developed as a university group project for CMPT 417
 
 The core implementation was heavily inspired by Benjamin Botto's Medium article: [Implementing an Optimal Rubik’s Cube Solver using Korf’s Algorithm](https://medium.com/@benjamin.botto/implementing-an-optimal-rubiks-cube-solver-using-korf-s-algorithm-bf750b332cf9).
 
+The original project has been completely overhauled and improved upon since the initial submission, including core architectural changes. This was solely developed by Jack Manuel.
+
 ## Technical Architecture
 
 The solver guarantees an optimal solution using an Iterative Deepening A* (IDA*) search, guided by several precomputed Pattern Databases (PDBs). It tracks the corners (88 million states), two sets of seven edges (511 million states each), and edge orientations. The maximum distance from these databases provides an admissible heuristic to prune the search space.
