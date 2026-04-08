@@ -259,7 +259,14 @@ int main(int argc, char const *argv[])
                     cube.applyMoves(line);
                     std::cout << "\nScramble: " << line << std::endl;
                     std::string solution = Solver::solveWithPDB(cube);
-                    if (!solution.empty()) std::cout << "Solution: " << solution << std::endl;
+                    if (!solution.empty()) 
+                    {
+                        std::cout << "Scramble: " << line << std::endl;
+                        std::cout << "Solution: " << solution << std::endl;
+                        int length = 1;
+                        for (char c : solution) if (c == ' ') length++;
+                        std::cout << "Length: " << length << " moves" << std::endl;
+                    }
                 } catch (const std::exception& e) {
                     std::cerr << "Error with scramble in file: " << e.what() << std::endl;
                 }
@@ -304,7 +311,11 @@ int main(int argc, char const *argv[])
 
                     if (!solution.empty())
                     {
+                        std::cout << "Scramble: " << current_scramble << std::endl;
                         std::cout << "Solution: " << solution << std::endl;
+                        int length = 1;
+                        for (char c : solution) if (c == ' ') length++;
+                        std::cout << "Length: " << length << " moves" << std::endl;
                     }
                 } catch (const std::exception& e) {
                     std::cerr << "Error with scramble: " << e.what() << std::endl;
