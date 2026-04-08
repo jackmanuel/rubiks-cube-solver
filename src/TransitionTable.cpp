@@ -1,12 +1,11 @@
-#include <iostream>
-#include <fstream>
 #include <cstring>
-#include <string>
+#include <fstream>
+#include <iostream>
 
 #include "TransitionTable.h"
 #include "Cube.h"
-#include "Indexer.h"
 #include "DatabaseConstants.h"
+#include "Indexer.h"
 #include "ProgressBar.h"
 
 namespace TransitionTable {
@@ -16,7 +15,7 @@ uint16_t (*cornerPerm)[NUM_MOVES] = nullptr;
 uint16_t (*cornerOrient)[NUM_MOVES] = nullptr;
 uint32_t (*edgePerm)[NUM_MOVES] = nullptr;
 uint8_t  (*edgeFlipMask)[NUM_MOVES] = nullptr;
-uint16_t (*fullOrient)[NUM_MOVES] = nullptr;
+
 
 // ======================== Move Definitions ========================
 // For each move, define how corner/edge positions are permuted and
@@ -276,10 +275,7 @@ static void generateEdgePermTable(Indexer& indexer)
         std::array<int, Indexer::NUM_EDGES_IN_PDB> positions;
         indexer.unrankEdgePerm(rank, positions);
 
-        // Build a minimal Cube with edges at these positions for ranking
-        // We need edges where edgeSet[identity] = position,
-        // which means: for each identity i, the edge with index=i is at positions[i].
-        // In Cube terms: edges[positions[i]].index = i
+        // Place tracked edges at their positions for ranking
         Cube cube;
         auto& edges = cube.getEdges();
         // Clear all edge indices to something > 6 (not tracked)
@@ -296,14 +292,8 @@ static void generateEdgePermTable(Indexer& indexer)
 
         for (int m = 0; m < NUM_MOVES; m++)
         {
-            // Apply the move's position permutation
-            // New position of edge identity i = EDGE_SOURCE inverse at positions[i]
-            // Actually: EDGE_SOURCE[m][new_pos] = old_pos means:
-            // "the piece at new_pos came from old_pos"
-            // We need: "where does the piece at old_pos go?" i.e. the inverse map
-            // If old_pos = positions[i], we find new_pos such that EDGE_SOURCE[m][new_pos] = positions[i]
+            // Build inverse map: posMap[old_pos] = new_pos
 
-            // Build inverse: posMap[old_pos] = new_pos
             int posMap[12];
             for (int p = 0; p < 12; p++)
             {
@@ -365,21 +355,7 @@ static void generateEdgeFlipMaskTable(Indexer& indexer)
 
         for (int m = 0; m < NUM_MOVES; m++)
         {
-            // For each of the 7 tracked edges (identity i at positions[i]),
-            // check if positions[i] is a position that gets flipped by this move.
-            // The flip happens BEFORE the cycle (at the old position).
-            // Actually in Cube.cpp, flips happen AFTER the cycle, so the flip
-            // applies to whatever edge is now at the destination position.
-            // But since EDGE_FLIP_POS marks the positions involved in the flip,
-            // and the edge at old position positions[i] either stays or moves,
-            // the flip check should be at the OLD position for each edge.
-            //
-            // Looking at Cube::f(): fourCycleEdges(2,5,8,4) then flipEdge(2,5,8,4)
-            // After the cycle, the edge NOW at position 2 (which came from pos 5)
-            // gets flipped. So the flip is on the POST-cycle position.
-            // Since we're tracking by identity, edge i was at positions[i],
-            // after the move it's at posMap[positions[i]].
-            // The flip happens at the destination position.
+            // Flip is at the post-move position: posMap[positions[i]]
             int posMap[12];
             for (int p = 0; p < 12; p++)
             {
@@ -407,40 +383,6 @@ static void generateEdgeFlipMaskTable(Indexer& indexer)
     progress.finish();
 }
 
-static void generateFullOrientTable(Indexer& indexer)
-{
-    std::cout << "  Generating full edge orientation table (" << NUM_FULL_EDGE_ORIENTS << " states)..." << std::flush;
-
-    fullOrient = new uint16_t[NUM_FULL_EDGE_ORIENTS][NUM_MOVES];
-
-    for (int rank = 0; rank < NUM_FULL_EDGE_ORIENTS; rank++)
-    {
-        // Decode orientation bits (position-ordered)
-        std::array<uint8_t, Cube::NUM_EDGES> orient;
-        indexer.unrankFullEdgeOrient((uint16_t)rank, orient);
-
-        for (int m = 0; m < NUM_MOVES; m++)
-        {
-            // Apply the move: new orient at pos = old orient at source pos, XOR flip
-            std::array<uint8_t, Cube::NUM_EDGES> newOrient;
-            for (int pos = 0; pos < Cube::NUM_EDGES; pos++)
-            {
-                int sourcePos = EDGE_SOURCE[m][pos];
-                newOrient[pos] = orient[sourcePos] ^ (EDGE_FLIP_POS[m][pos] ? 1 : 0);
-            }
-
-            // Re-encode: first 11 bits
-            uint16_t newRank = 0;
-            for (int i = 0; i < Cube::NUM_EDGES - 1; i++)
-            {
-                newRank |= newOrient[i] << i;
-            }
-            fullOrient[rank][m] = newRank;
-        }
-    }
-
-    std::cout << " done." << std::endl;
-}
 
 
 // ======================== Persistence ========================
@@ -477,7 +419,7 @@ void generate()
     generateCornerOrientTable(indexer);
     generateEdgePermTable(indexer);
     generateEdgeFlipMaskTable(indexer);
-    generateFullOrientTable(indexer);
+
 
     // Save to disk
     std::cout << "Saving transition tables to disk..." << std::flush;
@@ -485,7 +427,7 @@ void generate()
     saveTable(DatabaseConstants::CORNER_ORIENT_TT, cornerOrient, (size_t)NUM_CORNER_ORIENTS);
     saveTable(DatabaseConstants::EDGE_PERM_TT,     edgePerm,     (size_t)NUM_EDGE_PERMS);
     saveTable(DatabaseConstants::EDGE_FLIP_TT,     edgeFlipMask, (size_t)NUM_EDGE_PERMS);
-    saveTable(DatabaseConstants::FULL_ORIENT_TT,   fullOrient,   (size_t)NUM_FULL_EDGE_ORIENTS);
+
     std::cout << " done." << std::endl;
 }
 
@@ -535,15 +477,7 @@ void init()
         }
     }
 
-    // Full orient
-    if (allLoaded)
-    {
-        fullOrient = new uint16_t[NUM_FULL_EDGE_ORIENTS][NUM_MOVES];
-        if (!loadTable(DatabaseConstants::FULL_ORIENT_TT, fullOrient, (size_t)NUM_FULL_EDGE_ORIENTS))
-        {
-            allLoaded = false;
-        }
-    }
+
 
     if (allLoaded)
     {
@@ -564,7 +498,6 @@ void cleanup()
     delete[] cornerOrient;  cornerOrient = nullptr;
     delete[] edgePerm;      edgePerm = nullptr;
     delete[] edgeFlipMask;  edgeFlipMask = nullptr;
-    delete[] fullOrient;    fullOrient = nullptr;
 }
 
 } // namespace TransitionTable

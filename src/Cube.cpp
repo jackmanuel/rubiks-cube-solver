@@ -1,22 +1,9 @@
-#include <iostream>
-#include <cstdio>
-#include <string>
-#include <sstream>
 #include <iterator>
-#include <vector>
-#include <cstring>
+#include <sstream>
 
 #include "Cube.h"
 
-// Pre-computed solved states for memcmp-based goal detection.
-// Solved state: sequential indices (0..N-1) with all orientations 0.
-const std::array<Cube::Cubie, Cube::NUM_CORNERS> Cube::SOLVED_CORNERS = {{
-    {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0}, {6,0}, {7,0}
-}};
-const std::array<Cube::Cubie, Cube::NUM_EDGES> Cube::SOLVED_EDGES = {{
-    {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0},
-    {6,0}, {7,0}, {8,0}, {9,0}, {10,0}, {11,0}
-}};
+
 
 // constructs solved cube
 Cube::Cube()
@@ -41,26 +28,7 @@ Cube::Cube()
     this->depth = 0;
 }
 
-void Cube::printCubeState(void)
-{   
-    std::cout << "Corners: " << std::endl;
-    for (int i = 0; i < Cube::NUM_CORNERS; i++){
 
-        Cubie corner = this->corners[i];
-        printf("(%u, %u) ", corner.index, corner.orientation);
-    }
-
-    printf("\n");
-
-    std::cout << "Edges: " << std::endl;
-    for (int i = 0; i < Cube::NUM_EDGES; i++){
-
-        Cubie edge = this->edges[i];
-        printf("(%u, %u) ", edge.index, edge.orientation);
-    }
-
-    printf("\n");
-}
 
 std::array<Cube::Cubie, Cube::NUM_CORNERS>& Cube::getCorners(void)
 {
@@ -72,76 +40,14 @@ uint8_t Cube::getDepth(void)
     return this->depth;
 }
 
-void Cube::setDepth(uint8_t newDepth)
-{
-    this->depth = newDepth;
-}
+
 
 std::array<Cube::Cubie, Cube::NUM_EDGES>& Cube::getEdges(void)
 {
     return this->edges;
 }
 
-Cube::move Cube::getLastMove(void)
-{
-    return this->lastMove;
-}
 
-std::vector<Cube> Cube::generateNeighbours2(void)
-{
-    std::vector<Cube> result;
-
-    if (this->lastMove != R && this->lastMove != R_PRIME && this->lastMove != R2)
-    {   
-        Cube rCube = *this;
-        Cube rPrimeCube = *this;
-        Cube r2Cube = *this;
-
-        rCube.r();
-        result.push_back(rCube);
-
-        rPrimeCube.rPrime();
-        result.push_back(rPrimeCube);
-
-        r2Cube.r2();
-        result.push_back(r2Cube);
-    }
-
-    
-    if (this->lastMove != U && this->lastMove != U_PRIME && this->lastMove != U2)
-    {   
-        Cube uCube = *this;
-        Cube uPrimeCube = *this;
-        Cube u2Cube = *this;
-
-        uCube.u();
-        result.push_back(uCube);
-
-        uPrimeCube.uPrime();
-        result.push_back(uPrimeCube);
-
-        u2Cube.u2();
-        result.push_back(u2Cube);
-    }
-
-    if (this->lastMove != F && this->lastMove != F_PRIME && this->lastMove != F2)
-    {
-        Cube fCube = *this;
-        Cube fPrimeCube = *this;
-        Cube f2Cube = *this;
-
-        fCube.f();
-        result.push_back(fCube);
-
-        fPrimeCube.fPrime();
-        result.push_back(fPrimeCube);
-
-        f2Cube.f2();
-        result.push_back(f2Cube);
-    }
-    
-    return result;
-}
 
 std::vector<Cube> Cube::generateNeighbours(void)
 {
@@ -254,116 +160,6 @@ std::vector<Cube> Cube::generateNeighbours(void)
     return result;
 }
 
-std::vector<Cube> Cube::generateNeighboursPruned(void)
-{
-    std::vector<Cube> result;
-
-    this->depth++;
-
-    if (this->lastMove != R && this->lastMove != R_PRIME && this->lastMove != R2
-     && this->lastMove != L && this->lastMove != L_PRIME && this->lastMove != L2)
-    {   
-        Cube rCube = *this;
-        Cube rPrimeCube = *this;
-        Cube r2Cube = *this;
-
-        rCube.r();
-        result.push_back(rCube);
-
-        rPrimeCube.rPrime();
-        result.push_back(rPrimeCube);
-
-        r2Cube.r2();
-        result.push_back(r2Cube);
-    }
-
-    
-    if (this->lastMove != U && this->lastMove != U_PRIME && this->lastMove != U2
-     && this->lastMove != D && this->lastMove != D_PRIME && this->lastMove != D2)
-    {   
-        Cube uCube = *this;
-        Cube uPrimeCube = *this;
-        Cube u2Cube = *this;
-
-        uCube.u();
-        result.push_back(uCube);
-
-        uPrimeCube.uPrime();
-        result.push_back(uPrimeCube);
-
-        u2Cube.u2();
-        result.push_back(u2Cube);
-    }
-
-    if (this->lastMove != F && this->lastMove != F_PRIME && this->lastMove != F2
-     && this->lastMove != B && this->lastMove != B_PRIME && this->lastMove != B2)
-    {
-        Cube fCube = *this;
-        Cube fPrimeCube = *this;
-        Cube f2Cube = *this;
-
-        fCube.f();
-        result.push_back(fCube);
-
-        fPrimeCube.fPrime();
-        result.push_back(fPrimeCube);
-
-        f2Cube.f2();
-        result.push_back(f2Cube);
-    }
-
-    if (this->lastMove != L && this->lastMove != L_PRIME && this->lastMove != L2)
-    {
-        Cube lCube = *this;
-        Cube lPrimeCube = *this;
-        Cube l2Cube = *this;
-
-        lCube.l();
-        result.push_back(lCube);
-
-        lPrimeCube.lPrime();
-        result.push_back(lPrimeCube);
-
-        l2Cube.l2();
-        result.push_back(l2Cube);
-    }
-
-    if (this->lastMove != B && this->lastMove != B_PRIME && this->lastMove != B2)
-    {
-        Cube bCube = *this;
-        Cube bPrimeCube = *this;
-        Cube b2Cube = *this;
-
-        bCube.b();
-        result.push_back(bCube);
-
-        bPrimeCube.bPrime();
-        result.push_back(bPrimeCube);
-
-        b2Cube.b2();
-        result.push_back(b2Cube);
-    }
-
-    if (this->lastMove != D && this->lastMove != D_PRIME && this->lastMove != D2)
-    {
-        Cube dCube = *this;
-        Cube dPrimeCube = *this;
-        Cube d2Cube = *this;
-
-        dCube.d();
-        result.push_back(dCube);
-
-        dPrimeCube.dPrime();
-        result.push_back(dPrimeCube);
-
-        d2Cube.d2();
-        result.push_back(d2Cube);
-    }
-    
-    this->depth--;
-
-    return result;
-}
 
 void Cube::r_array()
 {
@@ -767,26 +563,6 @@ void Cube::flipEdgeOrientation(uint8_t edge_index)
     edge.orientation ^= 1;
 }
 
-// memcmp-based goal test: compares the entire corners/edges arrays
-// against pre-computed solved state in a single operation per array.
-bool Cube::isSolved(void)
-{
-    return isCornerSolved() && isEdgeSolved();
-}
-
-bool Cube::isCornerSolved(void)
-{
-    return std::memcmp(corners.data(), SOLVED_CORNERS.data(),
-                       NUM_CORNERS * sizeof(Cubie)) == 0;
-}
-
-bool Cube::isEdgeSolved(void)
-{
-    return std::memcmp(edges.data(), SOLVED_EDGES.data(),
-                       NUM_EDGES * sizeof(Cubie)) == 0;
-}
-
-// Function pointer table for fast move dispatch by index (0-17)
 // Order: R,R',R2, U,U',U2, F,F',F2, D,D',D2, B,B',B2, L,L',L2
 static void (Cube::*MOVE_FUNCS[Cube::NUM_MOVES])() = {
     &Cube::r, &Cube::rPrime, &Cube::r2,

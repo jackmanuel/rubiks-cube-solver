@@ -41,7 +41,7 @@ class Indexer
         void unrankCornerPerm(int permRank, std::array<uint8_t, Cube::NUM_CORNERS>& perm);
         void unrankCornerOrient(int orientRank, std::array<uint8_t, Cube::NUM_CORNERS>& orient);
         void unrankEdgePerm(int permRank, std::array<int, NUM_EDGES_IN_PDB>& positions);
-        void unrankFullEdgeOrient(uint16_t orientRank, std::array<uint8_t, Cube::NUM_EDGES>& orient);
+
 
     private:
 
@@ -51,9 +51,9 @@ class Indexer
         std::array<int, Indexer::NUM_EDGES_IN_PDB> perms;
         std::array<int, Indexer::NUM_EDGES_IN_PDB> edgeSet1;
         std::array<int, Indexer::NUM_EDGES_IN_PDB> edgeSet2;
-        std::array<int, Cube::NUM_EDGES> edgeSetAll;
 
-        std::array<uint8_t, Cube::NUM_CORNERS> getLehmerCode(Cube cube);
+
+
         int cornerLehmerToBase10(std::array<uint8_t, Cube::NUM_CORNERS>& lehmerCode);
 
         template<std::size_t SIZE>

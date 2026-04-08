@@ -25,21 +25,7 @@ PDB::~PDB(void)
     delete orientDB;
 }
 
-int PDB::getMoveCountLowerBound(Cube cube)
-{
-    uint8_t cornerMoves = (*cornerDB)[indexer.getCornerIndex(cube)];
-    uint8_t edgeMoves1 = (*edge1DB)[indexer.getEdgeIndex1(cube)];
-    uint8_t edgeMoves2 = (*edge2DB)[indexer.getEdgeIndex2(cube)];
-    uint8_t orientMoves = (*orientDB)[indexer.getEdgeOrientRankCube(cube)];
 
-    uint8_t max = cornerMoves;
-
-    if (edgeMoves1 > max) { max = edgeMoves1; }
-    if (edgeMoves2 > max) { max = edgeMoves2; }
-    if (orientMoves > max) { max = orientMoves; }
-
-    return (int)max;
-}
 
 
 

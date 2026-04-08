@@ -1,13 +1,12 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <thread>
 
 #include "Solver.h"
 #include "Cube.h"
-#include "PDB.h"
+#include "DatabaseConstants.h"
 #include "Indexer.h"
 #include "TransitionTable.h"
-#include "DatabaseConstants.h"
 
 PDB* Solver::sharedPDB = nullptr;
 
@@ -70,7 +69,7 @@ bool Solver::dfs(
     int distance, int lastMove,
     SearchContext& ctx)
 {
-    // Extract properties instantly via registers
+    // Extract bitpacked fields
     uint32_t ePerm1 = e1Idx >> 7;
     uint8_t eOrient1 = e1Idx & 0x7F;
     uint32_t ePerm2 = e2Idx >> 7;
@@ -78,7 +77,7 @@ bool Solver::dfs(
     uint16_t cPerm = cState >> 16;
     uint16_t cOrient = cState & 0xFFFF;
 
-    // Heuristic Lookup: Edge databases are checked first as they are more likely to prune.
+    // Heuristic lookup
     uint8_t h = ctx.edge1DB[e1Idx];
     if (h > distance) return false;
 
@@ -131,14 +130,7 @@ bool Solver::dfs(
     return false;
 }
 
-std::string Solver::solve(Cube cube)
-{
-    // Load pattern databases
-    PDB pdb(DatabaseConstants::CORNER_DB, DatabaseConstants::EDGE1_DB,
-            DatabaseConstants::EDGE2_DB, DatabaseConstants::ORIENT_DB);
 
-    return solveWithPDB(cube, &pdb);
-}
 
 void Solver::init()
 {

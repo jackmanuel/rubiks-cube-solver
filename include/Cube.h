@@ -24,15 +24,7 @@ class Cube
         static const int NUM_EDGES = 12;
         static const int NUM_MOVES = 18;
 
-        bool operator==(const Cube &cube) const
-        {
-            return (this->edges == cube.edges) && (this->corners == cube.corners);
-        }
 
-        bool operator<(const Cube &cube) const
-        {
-            return this->depth < cube.depth;
-        }
 
         enum move
         {
@@ -57,10 +49,6 @@ class Cube
             L2
         };
 
-        enum layer
-        {
-            UP, DOWN, LEFT, RIGHT
-        };
 
         enum Face { R_FACE = 0, U_FACE, F_FACE, D_FACE, B_FACE, L_FACE };
         
@@ -68,33 +56,18 @@ class Cube
         {
             uint8_t index;
             uint8_t orientation;
-
-            bool operator==(const Cubie &cubie) const
-            {
-                return (this->index == cubie.index) && (this->orientation == cubie.orientation);
-            }
-
         };
 
 
 
         Cube();
-        bool isSolved(void);
-        bool isEdgeSolved(void);
-        bool isCornerSolved(void);
-
-        void printCubeState(void);
         void applyMoves(std::string moveList);
 
-        std::vector<Cube> generateNeighbours2(void);
         std::vector<Cube> generateNeighbours(void);
-        std::vector<Cube> generateNeighboursPruned(void);
         std::array<Cubie, Cube::NUM_CORNERS>& getCorners(void);
         std::array<Cubie, Cube::NUM_EDGES>& getEdges(void);
-        Cube::move getLastMove(void);
 
         uint8_t getDepth(void);
-        void setDepth(uint8_t newDepth);
 
         void r();
         void rPrime();
@@ -210,8 +183,7 @@ class Cube
         move lastMove;
         uint8_t depth;
 
-        static const std::array<Cubie, NUM_CORNERS> SOLVED_CORNERS;
-        static const std::array<Cubie, NUM_EDGES> SOLVED_EDGES;
+
 
         void updateCornerOrientation(uint8_t corner_index, uint8_t change);
         void flipEdgeOrientation(uint8_t edge_index);

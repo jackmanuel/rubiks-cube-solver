@@ -13,10 +13,10 @@
 #endif
 
 #include "Cube.h"
+#include "DatabaseConstants.h"
 #include "PDBBuilder.h"
 #include "Solver.h"
 #include "TransitionTable.h"
-#include "DatabaseConstants.h"
 
 using namespace DatabaseConstants;
 

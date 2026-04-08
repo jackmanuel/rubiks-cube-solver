@@ -1,19 +1,17 @@
-#include <thread>
-#include <atomic>
-#include <mutex>
 #include <algorithm>
-#include <unordered_set>
-#include <queue>
-#include <stack>
+#include <atomic>
 #include <fstream>
 #include <iostream>
+#include <queue>
+#include <thread>
+#include <unordered_set>
 #include <vector>
 
 #include "PDBBuilder.h"
 #include "Cube.h"
+#include "DatabaseConstants.h"
 #include "Indexer.h"
 #include "ProgressBar.h"
-#include "DatabaseConstants.h"
 #include "TransitionTable.h"
 
 PDBBuilder::PDBBuilder()
@@ -56,122 +54,6 @@ void PDBBuilder::buildEdges2(uint32_t numThreads)
 
     delete database;
 }
-
-std::array<uint8_t, PDBBuilder::NUM_EDGE_RANKS>* PDBBuilder::testDFS(int depth)
-{
-    Indexer indexer;
-    std::array<uint8_t, NUM_EDGE_RANKS>* database = new std::array<uint8_t, NUM_EDGE_RANKS>{0};
-
-    for (uint8_t currDepth = 0; currDepth <= depth; currDepth++)
-    {
-        DFS(indexer, currDepth, database);
-    }
-
-    // all database values not filled in must be 11 moves
-    for (int i = 0; i < NUM_EDGE_RANKS; i++)
-    {
-        if ((*database)[i] == 0)
-        {
-            (*database)[i] = 11;
-        }
-    }
-
-    // add 0 for solved cube, since it's overwritten
-    Cube cube;
-    (*database)[indexer.getEdgeIndex1(cube)] = 0;
-
-
-    return database;
-}
-
-
-void PDBBuilder::DFS(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database,
-                     ProgressBar* progress, uint64_t* totalPopulated)
-{
-    std::stack<Cube> open;
-    std::vector<Cube> neighbours;
-
-    Cube cube;
-    open.push(cube);
-
-    while (!open.empty()){
-        Cube current = open.top();
-        open.pop();
-        
-        uint32_t rank = indexer.getEdgeIndex1(current);
-        uint32_t databaseVal = (*database)[rank];
-
-        if (databaseVal == 0)
-        {
-            (*database)[rank] = current.getDepth();
-            if (totalPopulated && progress)
-            {
-                (*totalPopulated)++;
-                progress->update(*totalPopulated);
-            }
-        }
-        
-        // dont generate neighbours if max depth is reached
-        // or database already has entry
-        if (current.getDepth() == maxDepth || databaseVal < current.getDepth())
-        {
-            continue;
-        }
-
-        neighbours = current.generateNeighbours();
-
-        for (Cube neighbour : neighbours)
-        {
-            open.push(neighbour);
-        }
-    }
-}
-
-
-void PDBBuilder::DFS2(Indexer indexer, uint8_t maxDepth, std::array<uint8_t, NUM_EDGE_RANKS>* database,
-                      ProgressBar* progress, uint64_t* totalPopulated)
-{
-    std::stack<Cube> open;
-    std::vector<Cube> neighbours;
-
-    Cube cube;
-    open.push(cube);
-
-    while (!open.empty()){
-        Cube current = open.top();
-        open.pop();
-        
-        uint32_t rank = indexer.getEdgeIndex2(current);
-        uint32_t databaseVal = (*database)[rank];
-
-        if (databaseVal == 0)
-        {
-            (*database)[rank] = current.getDepth();
-            if (totalPopulated && progress)
-            {
-                (*totalPopulated)++;
-                progress->update(*totalPopulated);
-            }
-        }
-        
-        // dont generate neighbours if max depth is reached
-        // or database already has entry
-        if (current.getDepth() == maxDepth || databaseVal < current.getDepth())
-        {
-            continue;
-        }
-
-        neighbours = current.generateNeighbours();
-
-        for (Cube neighbour : neighbours)
-        {
-            open.push(neighbour);
-        }
-    }
-}
-
-
-
 
 void PDBBuilder::buildEdgeOrient(uint32_t numThreads)
 {   
