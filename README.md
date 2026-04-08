@@ -4,21 +4,15 @@ An optimal Rubik's Cube solver implementing Korf's IDA* Algorithm with Pattern D
 
 ## Project Origin & History
 
-This project was originally developed as a university group project for CMPT 417 (Intelligent Systems) at Simon Fraser University during the Summer 2022 semester, taught by Hang Ma. The original collaboration was between Jack Manuel, Keene Upathamp, and Tara H. Kazemi. The original state of the project as submitted has been preserved and can be found under the GitHub tag [v1.1-archive](https://github.com/jackmanuel/rubiks-cube-solver/tree/v1.1-archive).
+This project was originally developed as a university group project for CMPT 417 (Intelligent Systems) at Simon Fraser University during the Summer 2022 semester. The original group submission by Jack Manuel, Keene Upathamp, and Tara H. Kazemi has been preserved under the [v1.1-archive](https://github.com/jackmanuel/rubiks-cube-solver/tree/v1.1-archive) tag. For a deep dive into the mathematical implementation, see the [original project report](docs/Korf_IDA_PDB_Report.pdf).
 
 The core implementation was heavily inspired by Benjamin Botto's Medium article: [Implementing an Optimal Rubik’s Cube Solver using Korf’s Algorithm](https://medium.com/@benjamin.botto/implementing-an-optimal-rubiks-cube-solver-using-korf-s-algorithm-bf750b332cf9).
 
-## 2026 Revival and Architecture
+## Technical Architecture
 
-As of 2026, I have revived this repository to refine the codebase, fix original submission issues, and heavily optimize the performance. This revival is an independent project undertaken solely by myself (Jack Manuel).
+The solver guarantees an optimal solution using an Iterative Deepening A* (IDA*) search, guided by several precomputed Pattern Databases (PDBs). It tracks the corners (88 million states), two sets of seven edges (511 million states each), and edge orientations. The maximum distance from these databases provides an admissible heuristic to prune the search space.
 
-The solver utilizes a high-performance transition table architecture. During the hot loop of the search algorithm, the program does not instantiate or manipulate full "Cube" objects. Instead, the cube's state is abstracted entirely into numeric values representing the permutation and orientation of its pieces (corners and edges). Arrays (transition tables) are precomputed to map how applying a specific move transforms one numeric state immediately into another. Because these tables are mathematically generated once and then saved to disk, the search algorithm can apply moves in constant time using simple array lookups, dramatically accelerating the solution time.
-
-To ensure performance remains high, the project also includes an automated Python benchmarking suite in the `benchmark` directory. The benchmark script runs the solver against 10 simple scrambles, measuring the total elapsed time, the total number of states evaluated, and the average evaluation speed (states per second). You can save a run as a baseline and compare future modifications against it to instantly spot performance regressions or optimizations.
-
-## Technical Overview
-
-The solver guarantees an optimal solution by utilizing Iterative Deepening A* (IDA*) search. To effectively prune the massive search space of 43 quintillion permutations, it relies on several precomputed Pattern Databases (PDBs). A database is used for the corners, which indexes over 88 million states. The solver also uses two disjoint databases for the edges, each covering seven edges and containing around 511 million states. A smaller database tracks the orientation of all twelve edges. The solver calculates the maximum distance from all available databases to provide a strong, admissible heuristic for the search algorithm.
+The search relies on a transition table architecture. Instead of manipulating full cube structures, the state is abstracted into numeric values. Precomputed arrays map how a move transforms one state to another, allowing the algorithm to apply moves in constant time via array lookups. Search performance is further accelerated through multithreading support, enabling the program to utilize as many CPU cores as possible during the solve. An automated Python script is provided in the `benchmark` directory to track evaluation speeds and catch performance regressions.
 
 ## How to Run (Linux Only)
 
@@ -56,21 +50,19 @@ Alternatively, you can target specific databases individually by replacing `all`
 
 ### Solving a Scramble
 
-Run the solver by passing a scramble string in standard Rubik's notation:
+Run the solver by passing a scramble string:
 
 ```bash
 ./solver "D L B2 R2 B' R2 U2 L2 B2 U2 B D2 L2 R' U B2 L R' B2 F'"
 ```
 
-Loading the pattern databases from disk into memory is a slow process that takes several seconds. To avoid this overhead when solving multiple cubes, you can use the `--continuous` flag to enter an interactive session where you can input scrambles one by one. Alternatively, you can use the `--input` flag followed by a filename to process a list of scrambles from a text file, solving each one sequentially.
+The solver accepts all standard move notation, including wide moves (r), slice moves (S), and rotations (x).
+
+Loading the pattern databases from disk into memory takes several seconds. To avoid this overhead when solving multiple cubes, use the `--continuous` flag to enter an interactive session to input scrambles one by one, or use the `--input` flag followed by a filename to process a list of scrambles sequentially.
 
 ## Performance Expectation
 
-Search time scales exponentially with the complexity of the scramble. A solution length of 0 to 14 moves is virtually instant. A scramble requiring 15 to 16 moves will typically take minutes to solve, and scrambles requiring 17 to 18 moves will take several hours.
-
-## Documentation
-
-For a deep dive into the mathematical implementation and Lehmer indexing, see the [report](docs/Korf_IDA_PDB_Report.pdf) included in this repository. The report was submitted as part of the original group project, and was contributed to by all three original members.
+Search time scales exponentially with the complexity of the scramble. With multithreaded evaluation, a solution length of 14 moves or fewer is virtually instant. A scramble requiring 15 to 16 moves takes seconds to a minute, while 17 moves takes minutes. Scrambles requiring 18 to 20 moves may take hours or even days to compute.
 
 ## References
 
