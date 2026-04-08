@@ -1,12 +1,13 @@
 #pragma once
 
-#include <string>
+#include <atomic>
 #include <cstdint>
+#include <string>
 
 #include "PDB.h"
 
-// Removed CubeState. State is now bitpacked into 3 uint32_t registers to 
-// hit the exact 6-argument limit of x64 SysV calling convention.
+// State is bitpacked into 3 uint32_t registers to hit the exact 
+// 6-argument limit of x64 SysV calling convention.
 
 struct SearchContext {
     const uint8_t* edge1DB;
@@ -15,6 +16,7 @@ struct SearchContext {
     int* solution;
     long long statesChecked;
     int maxDepth;
+    std::atomic<bool>* found;
 };
 
 class Solver
@@ -23,14 +25,7 @@ class Solver
         static const int MAX_MOVES = 20;
         static const int NUM_MOVES = 18;
 
-        // The solved state permutation rank for edge group 2 (edges 5-11) is 1831445,
-        // because unlike group 1, it tracks edges positioned at indices 5-11.
-        // e2Idx = ePerm2 * 128 + eOrient2 = 1831445 * 128 + 0 = 234424960
-        static const uint32_t SOLVED_E2_IDX = 234424960;
 
-        // Solve using coordinate-level IDA* with transition tables.
-        // The Cube is used only once to extract initial coordinates.
-        static std::string solve(Cube cube);
 
         // Pre-load pattern databases into memory. Must be called once before solveWithPDB.
         static void init();

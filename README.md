@@ -43,7 +43,7 @@ make
 
 ### Generating Pattern Databases
 
-The solver requires several database files to function effectively. These total approximately 1GB on disk. Building the edge databases is a heavy operation and can take over three hours for each edge database. The transition tables must also be generated before searching, though this process is much faster.
+The solver requires several database files to function effectively. These total approximately 1GB on disk. All the databases can be generated in less than one minute, depending on hardware. The transition tables must also be generated before searching, and this process is also quick.
 
 You can generate all required data by running the transition table and database build commands:
 

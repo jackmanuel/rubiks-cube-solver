@@ -18,6 +18,7 @@ compile_commands.json
 databases/
 docs/parallelization_analysis.md
 docs/results.txt
+test_scrambles.txt
 
 # Benchmark data
 benchmark/baseline.json

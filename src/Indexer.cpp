@@ -1,10 +1,7 @@
 #include <bitset>
-#include <array>
-#include <cstdio>
 #include <vector>
 
 #include "Indexer.h"
-#include "Cube.h"
 
 // this is number of different corner orientations there are
 // it is 3^7
@@ -377,22 +374,7 @@ void Indexer::unrankEdgePerm(int permRank, std::array<int, NUM_EDGES_IN_PDB>& po
     }
 }
 
-void Indexer::unrankFullEdgeOrient(uint16_t orientRank, std::array<uint8_t, Cube::NUM_EDGES>& orient)
-{
-    // Decode 11 bits, compute 12th from parity
-    uint16_t val = orientRank;
-    int sum = 0;
-    
-    for (int i = 0; i < Cube::NUM_EDGES - 1; i++)
-    {
-        orient[i] = val & 1;
-        sum += orient[i];
-        val >>= 1;
-    }
-    
-    // 12th edge orientation: parity constraint (sum must be even)
-    orient[Cube::NUM_EDGES - 1] = sum & 1;
-}
+
 
 // Explicit template instantiations for templates used across translation units
 template int Indexer::getEdgePermRank<7>(std::array<Cube::Cubie, Cube::NUM_EDGES>&, std::array<int, 7>);

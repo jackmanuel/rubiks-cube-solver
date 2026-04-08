@@ -1,12 +1,12 @@
-#include <iostream>
 #include <chrono>
+#include <iostream>
+#include <thread>
 
 #include "Solver.h"
 #include "Cube.h"
-#include "PDB.h"
+#include "DatabaseConstants.h"
 #include "Indexer.h"
 #include "TransitionTable.h"
-#include "DatabaseConstants.h"
 
 PDB* Solver::sharedPDB = nullptr;
 
@@ -69,7 +69,7 @@ bool Solver::dfs(
     int distance, int lastMove,
     SearchContext& ctx)
 {
-    // Extract properties instantly via registers
+    // Extract bitpacked fields
     uint32_t ePerm1 = e1Idx >> 7;
     uint8_t eOrient1 = e1Idx & 0x7F;
     uint32_t ePerm2 = e2Idx >> 7;
@@ -77,7 +77,7 @@ bool Solver::dfs(
     uint16_t cPerm = cState >> 16;
     uint16_t cOrient = cState & 0xFFFF;
 
-    // Heuristic Lookup: Edge databases are checked first as they are more likely to prune.
+    // Heuristic lookup
     uint8_t h = ctx.edge1DB[e1Idx];
     if (h > distance) return false;
 
@@ -90,15 +90,19 @@ bool Solver::dfs(
     if (hCorner > distance) return false;
     if (hCorner > h) h = hCorner;
 
+    // Check if another thread found the solution
+    if (ctx.found->load()) return false;
+
     ctx.statesChecked++;
-    if ((ctx.statesChecked & 0xFFFFF) == 0)
-    {
-        std::cout << "\r\033[Ksearching depth " << ctx.maxDepth << "... (" << formatNumber(ctx.statesChecked) << " states checked)" << std::flush;
-    }
+    // Aggregate throughput is calculated and displayed by the main thread 
+    // to avoid terminal flickering in multithreaded mode.
 
     // Goal test: heuristic is 0 if and only if the cube is solved.
-    // This works because the pattern databases collectively cover all 20 movable pieces.
-    if (h == 0) return true;
+    if (h == 0)
+    {
+        ctx.found->store(true);
+        return true;
+    }
 
     const MoveList& nextMoves = MoveTable[lastMove + 1];
     int currentDepth = ctx.maxDepth - distance;
@@ -126,14 +130,7 @@ bool Solver::dfs(
     return false;
 }
 
-std::string Solver::solve(Cube cube)
-{
-    // Load pattern databases
-    PDB pdb(DatabaseConstants::CORNER_DB, DatabaseConstants::EDGE1_DB,
-            DatabaseConstants::EDGE2_DB, DatabaseConstants::ORIENT_DB);
 
-    return solveWithPDB(cube, &pdb);
-}
 
 void Solver::init()
 {
@@ -193,43 +190,82 @@ std::string Solver::solveWithPDB(Cube cube, PDB* pdb)
 
     std::cout << "Starting the search at depth " << maxDepth << std::endl;
 
-    int solution[MAX_MOVES];
     long long totalStatesChecked = 0;
-
-    SearchContext ctx;
-    ctx.edge1DB = pdb->getEdge1DB().data();
-    ctx.edge2DB = pdb->getEdge2DB().data();
-    ctx.cornerDB = pdb->getCornerDB().data();
-    ctx.solution = solution;
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
     // IDA* loop: iteratively deepen until solution found
     while (maxDepth <= MAX_MOVES)
     {
-        std::cout << "\r\033[Ksearching depth " << maxDepth << "... (" << formatNumber(0) << " states checked)" << std::flush;
+        std::cout << "\r\033[Ksearching depth " << maxDepth << "... " << std::flush;
 
-        ctx.statesChecked = 0;
-        ctx.maxDepth = maxDepth;
+        std::atomic<bool> found(false);
+        std::vector<std::thread> threads;
+        long long threadStatesChecked[NUM_MOVES];
+        int threadSolutions[NUM_MOVES][MAX_MOVES];
+        bool threadFoundSolution[NUM_MOVES];
 
-        if (dfs(e1Idx, e2Idx, cState, maxDepth, -1, ctx))
+        for (int i = 0; i < NUM_MOVES; i++)
         {
-            totalStatesChecked += ctx.statesChecked;
+            threadStatesChecked[i] = 0;
+            threadFoundSolution[i] = false;
+            threads.emplace_back([&, i]() {
+                SearchContext ctx;
+                ctx.edge1DB = pdb->getEdge1DB().data();
+                ctx.edge2DB = pdb->getEdge2DB().data();
+                ctx.cornerDB = pdb->getCornerDB().data();
+                ctx.maxDepth = maxDepth;
+                ctx.found = &found;
+                ctx.statesChecked = 0;
+                ctx.solution = threadSolutions[i];
+                ctx.solution[0] = i;
+
+                // Apply initial move
+                uint32_t nextE1Idx = (TransitionTable::edgePerm[e1Idx >> 7][i] << 7) |
+                                     ((e1Idx & 0x7F) ^ TransitionTable::edgeFlipMask[e1Idx >> 7][i]);
+                uint32_t nextE2Idx = (TransitionTable::edgePerm[e2Idx >> 7][i] << 7) |
+                                     ((e2Idx & 0x7F) ^ TransitionTable::edgeFlipMask[e2Idx >> 7][i]);
+                uint16_t currentCPerm = cState >> 16;
+                uint16_t currentCOrient = cState & 0xFFFF;
+                uint32_t nextCState = ((uint32_t)TransitionTable::cornerPerm[currentCPerm][i] << 16) |
+                                       TransitionTable::cornerOrient[currentCOrient][i];
+
+                if (dfs(nextE1Idx, nextE2Idx, nextCState, maxDepth - 1, i, ctx))
+                {
+                    threadFoundSolution[i] = true;
+                }
+                threadStatesChecked[i] = ctx.statesChecked;
+            });
+        }
+
+        for (auto& t : threads) t.join();
+
+        long long depthStatesChecked = 0;
+        int foundThreadIdx = -1;
+        for (int i = 0; i < NUM_MOVES; i++)
+        {
+            depthStatesChecked += threadStatesChecked[i];
+            if (threadFoundSolution[i]) foundThreadIdx = i;
+        }
+        totalStatesChecked += depthStatesChecked;
+
+        if (foundThreadIdx != -1)
+        {
             auto endTime = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = endTime - startTime;
             double seconds = elapsed.count();
             double statesPerSec = (seconds > 0.0) ? (totalStatesChecked / seconds) : 0.0;
 
-            std::cout << std::endl << "SOLUTION FOUND!" << std::endl;
+            std::cout << "\r\033[Ksearching depth " << maxDepth << "... done (" << formatNumber(depthStatesChecked) << " states checked)" << std::endl;
+            std::cout << "SOLUTION FOUND!" << std::endl;
             std::cout << "Total states: " << formatNumber(totalStatesChecked) << std::endl;
             std::cout << "Search time:  " << seconds << " seconds" << std::endl;
             std::cout << "Speed:        " << formatNumber(static_cast<long long>(statesPerSec)) << " states/sec" << std::endl;
 
-            return movesToString(solution, maxDepth, cube);
+            return movesToString(threadSolutions[foundThreadIdx], maxDepth, cube);
         }
 
-        totalStatesChecked += ctx.statesChecked;
-        std::cout << "\r\033[Ksearching depth " << maxDepth << "... done (" << formatNumber(ctx.statesChecked) << " states checked)" << std::flush;
+        std::cout << "\r\033[Ksearching depth " << maxDepth << "... done (" << formatNumber(depthStatesChecked) << " states checked)" << std::flush;
         maxDepth++;
     }
 

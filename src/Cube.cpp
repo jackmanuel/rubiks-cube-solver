@@ -1,21 +1,9 @@
-#include <iostream>
-#include <cstdio>
-#include <string>
-#include <sstream>
 #include <iterator>
-#include <vector>
+#include <sstream>
 
 #include "Cube.h"
 
-// Pre-computed solved states for memcmp-based goal detection.
-// Solved state: sequential indices (0..N-1) with all orientations 0.
-const std::array<Cube::Cubie, Cube::NUM_CORNERS> Cube::SOLVED_CORNERS = {{
-    {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0}, {6,0}, {7,0}
-}};
-const std::array<Cube::Cubie, Cube::NUM_EDGES> Cube::SOLVED_EDGES = {{
-    {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0},
-    {6,0}, {7,0}, {8,0}, {9,0}, {10,0}, {11,0}
-}};
+
 
 // constructs solved cube
 Cube::Cube()
@@ -40,26 +28,7 @@ Cube::Cube()
     this->depth = 0;
 }
 
-void Cube::printCubeState(void)
-{   
-    std::cout << "Corners: " << std::endl;
-    for (int i = 0; i < Cube::NUM_CORNERS; i++){
 
-        Cubie corner = this->corners[i];
-        printf("(%u, %u) ", corner.index, corner.orientation);
-    }
-
-    printf("\n");
-
-    std::cout << "Edges: " << std::endl;
-    for (int i = 0; i < Cube::NUM_EDGES; i++){
-
-        Cubie edge = this->edges[i];
-        printf("(%u, %u) ", edge.index, edge.orientation);
-    }
-
-    printf("\n");
-}
 
 std::array<Cube::Cubie, Cube::NUM_CORNERS>& Cube::getCorners(void)
 {
@@ -71,76 +40,14 @@ uint8_t Cube::getDepth(void)
     return this->depth;
 }
 
-void Cube::setDepth(uint8_t newDepth)
-{
-    this->depth = newDepth;
-}
+
 
 std::array<Cube::Cubie, Cube::NUM_EDGES>& Cube::getEdges(void)
 {
     return this->edges;
 }
 
-Cube::move Cube::getLastMove(void)
-{
-    return this->lastMove;
-}
 
-std::vector<Cube> Cube::generateNeighbours2(void)
-{
-    std::vector<Cube> result;
-
-    if (this->lastMove != R && this->lastMove != R_PRIME && this->lastMove != R2)
-    {   
-        Cube rCube = *this;
-        Cube rPrimeCube = *this;
-        Cube r2Cube = *this;
-
-        rCube.r();
-        result.push_back(rCube);
-
-        rPrimeCube.rPrime();
-        result.push_back(rPrimeCube);
-
-        r2Cube.r2();
-        result.push_back(r2Cube);
-    }
-
-    
-    if (this->lastMove != U && this->lastMove != U_PRIME && this->lastMove != U2)
-    {   
-        Cube uCube = *this;
-        Cube uPrimeCube = *this;
-        Cube u2Cube = *this;
-
-        uCube.u();
-        result.push_back(uCube);
-
-        uPrimeCube.uPrime();
-        result.push_back(uPrimeCube);
-
-        u2Cube.u2();
-        result.push_back(u2Cube);
-    }
-
-    if (this->lastMove != F && this->lastMove != F_PRIME && this->lastMove != F2)
-    {
-        Cube fCube = *this;
-        Cube fPrimeCube = *this;
-        Cube f2Cube = *this;
-
-        fCube.f();
-        result.push_back(fCube);
-
-        fPrimeCube.fPrime();
-        result.push_back(fPrimeCube);
-
-        f2Cube.f2();
-        result.push_back(f2Cube);
-    }
-    
-    return result;
-}
 
 std::vector<Cube> Cube::generateNeighbours(void)
 {
@@ -253,116 +160,6 @@ std::vector<Cube> Cube::generateNeighbours(void)
     return result;
 }
 
-std::vector<Cube> Cube::generateNeighboursPruned(void)
-{
-    std::vector<Cube> result;
-
-    this->depth++;
-
-    if (this->lastMove != R && this->lastMove != R_PRIME && this->lastMove != R2
-     && this->lastMove != L && this->lastMove != L_PRIME && this->lastMove != L2)
-    {   
-        Cube rCube = *this;
-        Cube rPrimeCube = *this;
-        Cube r2Cube = *this;
-
-        rCube.r();
-        result.push_back(rCube);
-
-        rPrimeCube.rPrime();
-        result.push_back(rPrimeCube);
-
-        r2Cube.r2();
-        result.push_back(r2Cube);
-    }
-
-    
-    if (this->lastMove != U && this->lastMove != U_PRIME && this->lastMove != U2
-     && this->lastMove != D && this->lastMove != D_PRIME && this->lastMove != D2)
-    {   
-        Cube uCube = *this;
-        Cube uPrimeCube = *this;
-        Cube u2Cube = *this;
-
-        uCube.u();
-        result.push_back(uCube);
-
-        uPrimeCube.uPrime();
-        result.push_back(uPrimeCube);
-
-        u2Cube.u2();
-        result.push_back(u2Cube);
-    }
-
-    if (this->lastMove != F && this->lastMove != F_PRIME && this->lastMove != F2
-     && this->lastMove != B && this->lastMove != B_PRIME && this->lastMove != B2)
-    {
-        Cube fCube = *this;
-        Cube fPrimeCube = *this;
-        Cube f2Cube = *this;
-
-        fCube.f();
-        result.push_back(fCube);
-
-        fPrimeCube.fPrime();
-        result.push_back(fPrimeCube);
-
-        f2Cube.f2();
-        result.push_back(f2Cube);
-    }
-
-    if (this->lastMove != L && this->lastMove != L_PRIME && this->lastMove != L2)
-    {
-        Cube lCube = *this;
-        Cube lPrimeCube = *this;
-        Cube l2Cube = *this;
-
-        lCube.l();
-        result.push_back(lCube);
-
-        lPrimeCube.lPrime();
-        result.push_back(lPrimeCube);
-
-        l2Cube.l2();
-        result.push_back(l2Cube);
-    }
-
-    if (this->lastMove != B && this->lastMove != B_PRIME && this->lastMove != B2)
-    {
-        Cube bCube = *this;
-        Cube bPrimeCube = *this;
-        Cube b2Cube = *this;
-
-        bCube.b();
-        result.push_back(bCube);
-
-        bPrimeCube.bPrime();
-        result.push_back(bPrimeCube);
-
-        b2Cube.b2();
-        result.push_back(b2Cube);
-    }
-
-    if (this->lastMove != D && this->lastMove != D_PRIME && this->lastMove != D2)
-    {
-        Cube dCube = *this;
-        Cube dPrimeCube = *this;
-        Cube d2Cube = *this;
-
-        dCube.d();
-        result.push_back(dCube);
-
-        dPrimeCube.dPrime();
-        result.push_back(dPrimeCube);
-
-        d2Cube.d2();
-        result.push_back(d2Cube);
-    }
-    
-    this->depth--;
-
-    return result;
-}
 
 void Cube::r_array()
 {
@@ -766,26 +563,6 @@ void Cube::flipEdgeOrientation(uint8_t edge_index)
     edge.orientation ^= 1;
 }
 
-// memcmp-based goal test: compares the entire corners/edges arrays
-// against pre-computed solved state in a single operation per array.
-bool Cube::isSolved(void)
-{
-    return isCornerSolved() && isEdgeSolved();
-}
-
-bool Cube::isCornerSolved(void)
-{
-    return std::memcmp(corners.data(), SOLVED_CORNERS.data(),
-                       NUM_CORNERS * sizeof(Cubie)) == 0;
-}
-
-bool Cube::isEdgeSolved(void)
-{
-    return std::memcmp(edges.data(), SOLVED_EDGES.data(),
-                       NUM_EDGES * sizeof(Cubie)) == 0;
-}
-
-// Function pointer table for fast move dispatch by index (0-17)
 // Order: R,R',R2, U,U',U2, F,F',F2, D,D',D2, B,B',B2, L,L',L2
 static void (Cube::*MOVE_FUNCS[Cube::NUM_MOVES])() = {
     &Cube::r, &Cube::rPrime, &Cube::r2,
@@ -811,58 +588,58 @@ void Cube::applyMoves(std::string moveList)
     {
         if (moveStr == "F")      f();
         else if (moveStr == "F'") fPrime();
-        else if (moveStr == "F2") f2();
+        else if (moveStr == "F2" || moveStr == "F2'") f2();
         else if (moveStr == "U")  u();
         else if (moveStr == "U'") uPrime();
-        else if (moveStr == "U2") u2();
+        else if (moveStr == "U2" || moveStr == "U2'") u2();
         else if (moveStr == "D")  d();
         else if (moveStr == "D'") dPrime();
-        else if (moveStr == "D2") d2();
+        else if (moveStr == "D2" || moveStr == "D2'") d2();
         else if (moveStr == "R")  r();
         else if (moveStr == "R'") rPrime();
-        else if (moveStr == "R2") r2();
+        else if (moveStr == "R2" || moveStr == "R2'") r2();
         else if (moveStr == "L")  l();
         else if (moveStr == "L'") lPrime();
-        else if (moveStr == "L2") l2();
+        else if (moveStr == "L2" || moveStr == "L2'") l2();
         else if (moveStr == "B")  b();
         else if (moveStr == "B'") bPrime();
-        else if (moveStr == "B2") b2();
+        else if (moveStr == "B2" || moveStr == "B2'") b2();
         else if (moveStr == "M")  m();
         else if (moveStr == "M'") mPrime();
-        else if (moveStr == "M2") m2();
+        else if (moveStr == "M2" || moveStr == "M2'") m2();
         else if (moveStr == "E")  e();
         else if (moveStr == "E'") ePrime();
-        else if (moveStr == "E2") e2();
+        else if (moveStr == "E2" || moveStr == "E2'") e2();
         else if (moveStr == "S")  s();
         else if (moveStr == "S'") sPrime();
-        else if (moveStr == "S2") s2();
+        else if (moveStr == "S2" || moveStr == "S2'") s2();
         else if (moveStr == "x")  x();
         else if (moveStr == "x'") xPrime();
-        else if (moveStr == "x2") x2();
+        else if (moveStr == "x2" || moveStr == "x2'") x2();
         else if (moveStr == "y")  y();
         else if (moveStr == "y'") yPrime();
-        else if (moveStr == "y2") y2();
+        else if (moveStr == "y2" || moveStr == "y2'") y2();
         else if (moveStr == "z")  z();
         else if (moveStr == "z'") zPrime();
-        else if (moveStr == "z2") z2();
+        else if (moveStr == "z2" || moveStr == "z2'") z2();
         else if (moveStr == "Rw" || moveStr == "r") rw();
         else if (moveStr == "Rw'" || moveStr == "r'") rwPrime();
-        else if (moveStr == "Rw2" || moveStr == "r2") rw2();
+        else if (moveStr == "Rw2" || moveStr == "r2" || moveStr == "Rw2'" || moveStr == "r2'") rw2();
         else if (moveStr == "Lw" || moveStr == "l") lw();
         else if (moveStr == "Lw'" || moveStr == "l'") lwPrime();
-        else if (moveStr == "Lw2" || moveStr == "l2") lw2();
+        else if (moveStr == "Lw2" || moveStr == "l2" || moveStr == "Lw2'" || moveStr == "l2'") lw2();
         else if (moveStr == "Uw" || moveStr == "u") uw();
         else if (moveStr == "Uw'" || moveStr == "u'") uwPrime();
-        else if (moveStr == "Uw2" || moveStr == "u2") uw2();
+        else if (moveStr == "Uw2" || moveStr == "u2" || moveStr == "Uw2'" || moveStr == "u2'") uw2();
         else if (moveStr == "Dw" || moveStr == "d") dw();
         else if (moveStr == "Dw'" || moveStr == "d'") dwPrime();
-        else if (moveStr == "Dw2" || moveStr == "d2") dw2();
+        else if (moveStr == "Dw2" || moveStr == "d2" || moveStr == "Dw2'" || moveStr == "d2'") dw2();
         else if (moveStr == "Fw" || moveStr == "f") fw();
         else if (moveStr == "Fw'" || moveStr == "f'") fwPrime();
-        else if (moveStr == "Fw2" || moveStr == "f2") fw2();
+        else if (moveStr == "Fw2" || moveStr == "f2" || moveStr == "Fw2'" || moveStr == "f2'") fw2();
         else if (moveStr == "Bw" || moveStr == "b") bw();
         else if (moveStr == "Bw'" || moveStr == "b'") bwPrime();
-        else if (moveStr == "Bw2" || moveStr == "b2") bw2();
+        else if (moveStr == "Bw2" || moveStr == "b2" || moveStr == "Bw2'" || moveStr == "b2'") bw2();
         else
         {
             throw std::runtime_error("Invalid move encountered in scramble: \"" + moveStr + "\"");

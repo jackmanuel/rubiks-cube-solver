@@ -13,10 +13,10 @@
 #endif
 
 #include "Cube.h"
+#include "DatabaseConstants.h"
 #include "PDBBuilder.h"
 #include "Solver.h"
 #include "TransitionTable.h"
-#include "DatabaseConstants.h"
 
 using namespace DatabaseConstants;
 
@@ -38,6 +38,9 @@ static std::vector<std::string> getMissingDatabases()
 
 static void generateDatabases(const std::vector<std::string>& missing)
 {
+    // Ensure transition tables are initialized as they are required for parallel PDB building
+    TransitionTable::init();
+
     // Create the Databases directory if it doesn't exist
     MKDIR(DB_DIR.c_str());
 
@@ -56,14 +59,14 @@ static void generateDatabases(const std::vector<std::string>& missing)
         else if (db == EDGE1_DB)
         {
             std::cout << "\n[" << current << "/" << total << "] Generating edge group 1 pattern database..." << std::endl;
-            std::cout << "(This is large at ~511M entries. It may take 3+ hours)" << std::endl;
+            std::cout << "(This is large at ~511M entries. It takes less than one minute to generate)" << std::endl;
             PDBBuilder::buildEdges1();
             std::cout << "Done!" << std::endl;
         }
         else if (db == EDGE2_DB)
         {
             std::cout << "\n[" << current << "/" << total << "] Generating edge group 2 pattern database..." << std::endl;
-            std::cout << "(This is large at ~511M entries. It may take 3+ hours)" << std::endl;
+            std::cout << "(This is large at ~511M entries. It takes less than one minute to generate)" << std::endl;
             PDBBuilder::buildEdges2();
             std::cout << "Done!" << std::endl;
         }
@@ -194,7 +197,7 @@ int main(int argc, char const *argv[])
         }
         std::cerr << std::endl;
         std::cerr << "These databases can be generated automatically, but be aware:" << std::endl;
-        std::cerr << "  * The edge databases (~511M entries each) may take 3+ HOURS to generate." << std::endl;
+        std::cerr << "  * The databases should take less than one minute to generate." << std::endl;
         std::cerr << "  * Generation requires significant memory (1GB+)." << std::endl;
         std::cerr << "  * The total database size on disk is ~1GB." << std::endl;
         std::cerr << std::endl;
@@ -207,7 +210,7 @@ int main(int argc, char const *argv[])
         {
             std::cout << std::endl;
             std::cout << "Generating missing pattern databases..." << std::endl;
-            std::cout << "This may take a very long time. Do not interrupt the process." << std::endl;
+            std::cout << "This should be quick. Do not interrupt the process." << std::endl;
 
             try
             {

@@ -1,9 +1,9 @@
 CC = g++
-CFLAGS  = -g -Wall -O3 -Iinclude
+CFLAGS  = -g -Wall -O3 -Iinclude -pthread -std=c++17
 SRCDIR = src
 BUILDDIR = build
 
-OBJS = $(BUILDDIR)/main.o $(BUILDDIR)/Cube.o $(BUILDDIR)/Solver2.o \
+OBJS = $(BUILDDIR)/main.o $(BUILDDIR)/Cube.o \
        $(BUILDDIR)/Indexer.o $(BUILDDIR)/PDB.o $(BUILDDIR)/Solver.o \
        $(BUILDDIR)/PDBBuilder.o $(BUILDDIR)/TransitionTable.o
 
@@ -21,9 +21,6 @@ $(BUILDDIR)/main.o: $(SRCDIR)/main.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/Cube.o: $(SRCDIR)/Cube.cpp include/Cube.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILDDIR)/Solver2.o: $(SRCDIR)/Solver2.cpp include/Solver2.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/Indexer.o: $(SRCDIR)/Indexer.cpp include/Indexer.h

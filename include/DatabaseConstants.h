@@ -16,5 +16,4 @@ namespace DatabaseConstants {
     const std::string CORNER_ORIENT_TT = "databases/cornerOrient.tt";
     const std::string EDGE_PERM_TT = "databases/edgePerm.tt";
     const std::string EDGE_FLIP_TT = "databases/edgeFlip.tt";
-    const std::string FULL_ORIENT_TT = "databases/fullOrient.tt";
 }
